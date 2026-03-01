@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Viewer — JSON Explorer | Energon</title>
+  <meta name="description" content="Paste or upload JSON and explore records as a searchable nested table with live aggregate stats.">
+  <meta name="theme-color" content="#040714">
+  <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #040714;
+      --surface-1: rgba(255,255,255,0.025);
+      --surface-2: rgba(255,255,255,0.05);
+      --border-subtle: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.1);
+      --text-primary: #f9f9f9;
+      --text-secondary: #cacaca;
+      --text-muted: rgba(255,255,255,0.45);
+      --accent: #0063e5;
+      --accent-bright: #0080ff;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --font: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header-bar {
+      background: linear-gradient(135deg, #B015B0 0%, #3D0080 45%, #080010 100%);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      padding: 0 24px;
+      height: 68px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .header-logo-img {
+      height: 36px; width: auto; flex-shrink: 0;
+      filter: brightness(0) invert(1);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: block;
+    }
+    .header-logo-img:hover { transform: scale(1.14) rotate(-9deg); }
+    .header-logo h1 { font-size: 1.2em; font-weight: 600; letter-spacing: 0.5px; }
+    .header-subtitle { font-size: 0.82em; color: rgba(255,255,255,0.72); font-weight: 500; margin-top: 3px; }
+    .header-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 16px; border-radius: 7px;
+      font-size: 0.875rem; font-family: var(--font); font-weight: 500;
+      cursor: pointer; border: none;
+      transition: background 0.15s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-bright); }
+    .btn-ghost {
+      background: rgba(255,255,255,0.08); color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.14); }
+
+    /* ── Input View ── */
+    #view-input {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      overflow-y: auto;
+    }
+
+    .input-card {
+      width: 100%;
+      max-width: 720px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .input-title { font-size: 1.1rem; font-weight: 600; }
+
+    .drop-zone {
+      border: 2px dashed rgba(255,255,255,0.15);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.02);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(0,99,229,0.08);
+    }
+
+    #json-input {
+      width: 100%;
+      min-height: 240px;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: vertical;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text-primary);
+      padding: 16px;
+      line-height: 1.6;
+    }
+    #json-input::placeholder { color: var(--text-muted); }
+
+    .input-row { display: flex; align-items: center; gap: 12px; }
+
+    .file-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 16px; border-radius: 7px;
+      font-size: 0.875rem; font-weight: 500;
+      cursor: pointer;
+      background: rgba(255,255,255,0.08); color: var(--text-primary);
+      border: 1px solid var(--border);
+      transition: background 0.15s; user-select: none;
+    }
+    .file-label:hover { background: rgba(255,255,255,0.14); }
+    #file-input { display: none; }
+
+    .input-example {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .btn-example {
+      background: none; border: none; cursor: pointer;
+      color: var(--accent); font-size: 0.82rem;
+      font-family: var(--font); padding: 0;
+      text-decoration: underline; text-underline-offset: 2px;
+    }
+    .btn-example:hover { color: var(--accent-bright); }
+
+    .error-msg {
+      color: var(--danger); font-size: 0.85rem;
+      padding: 10px 14px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 7px;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ── Viewer View ── */
+    #view-viewer {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+    #view-viewer.active { display: flex; }
+
+    .search-bar {
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .search-wrap { position: relative; flex: 1; }
+    .search-icon {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted); pointer-events: none;
+    }
+    #search-input {
+      width: 100%;
+      padding: 9px 12px 9px 36px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: var(--font); font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    #search-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.07); }
+    #search-input::placeholder { color: var(--text-muted); }
+
+    .match-count { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+    .match-count.has-matches { color: var(--text-secondary); }
+
+    /* ── Main layout ── */
+    .viewer-body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+
+    .table-area { flex: 1; overflow: auto; }
+
+    /* ── Table ── */
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+
+    thead {
+      position: sticky; top: 0; z-index: 10;
+      background: #0b0918;
+    }
+    thead th {
+      padding: 10px 14px;
+      text-align: left; font-weight: 600;
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    thead th.col-num { text-align: right; }
+
+    /* Group rows */
+    .row-group {
+      cursor: pointer;
+      background: rgba(255,255,255,0.04);
+      user-select: none;
+    }
+    .row-group:hover { background: rgba(255,255,255,0.07); }
+    .row-group td {
+      padding: 10px 14px;
+      font-weight: 600; font-size: 0.82rem;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .group-name { display: flex; align-items: center; gap: 8px; }
+    .group-chevron {
+      width: 16px; height: 16px; flex-shrink: 0;
+      transition: transform 0.18s;
+      color: var(--text-muted);
+    }
+    .group-chevron.collapsed { transform: rotate(-90deg); }
+    .group-badge {
+      font-size: 0.72rem; font-weight: 500;
+      background: rgba(255,255,255,0.1);
+      padding: 2px 7px; border-radius: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Data rows */
+    .row-data td {
+      padding: 8px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--text-secondary);
+    }
+    .row-data { cursor: pointer; }
+    .row-data:hover td { background: rgba(255,255,255,0.05); }
+    .row-data.hidden { display: none; }
+    .row-data td.col-num {
+      text-align: right;
+      font-family: var(--font-mono); font-size: 0.82rem;
+    }
+
+    mark {
+      background: rgba(245,158,11,0.35);
+      color: inherit; border-radius: 2px; padding: 0 1px;
+    }
+
+    /* ── Stats Sidebar ── */
+    .stats-sidebar {
+      width: 280px; flex-shrink: 0;
+      border-left: 1px solid var(--border-subtle);
+      overflow-y: auto;
+      padding: 16px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+
+    .stats-section-title {
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted); margin-bottom: 6px;
+    }
+
+    .stats-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px; padding: 12px 14px;
+    }
+
+    .stats-col-name {
+      font-size: 0.8rem; font-weight: 600;
+      color: var(--text-primary); margin-bottom: 8px;
+      word-break: break-all;
+    }
+
+    .stats-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 3px 0; font-size: 0.8rem;
+    }
+    .stats-label { color: var(--text-muted); }
+    .stats-value { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); }
+
+    .percent-indicator {
+      margin-top: 8px; padding: 6px 10px;
+      border-radius: 6px; font-size: 0.78rem; font-weight: 500;
+    }
+    .percent-ok  { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+    .percent-low { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+    .percent-hi  { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+
+    .group-stat-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.8rem; padding: 4px 0;
+    }
+    .group-stat-name { color: var(--text-secondary); font-size: 0.78rem; word-break: break-all; }
+    .group-stat-count {
+      font-family: var(--font-mono); font-size: 0.75rem;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.07);
+      padding: 1px 7px; border-radius: 10px; flex-shrink: 0; margin-left: 6px;
+    }
+
+    .hidden-el { display: none !important; }
+
+    /* ── Record Modal ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .modal-box {
+      background: #0d0a1a;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      width: 100%; max-width: 600px;
+      max-height: 82vh;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .modal-title { font-size: 1.05rem; font-weight: 600; }
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); padding: 4px; border-radius: 5px;
+      display: flex; align-items: center;
+      transition: color 0.15s, background 0.15s;
+    }
+    .modal-close:hover { color: var(--text-primary); background: rgba(255,255,255,0.08); }
+    .modal-body { overflow-y: auto; }
+    .modal-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .modal-table thead th {
+      padding: 10px 16px; text-align: left;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: #0b0918; position: sticky; top: 0;
+    }
+    .modal-table thead th.col-num { text-align: right; }
+    .modal-table td {
+      padding: 9px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: var(--text-secondary);
+    }
+    .modal-table tbody tr:last-child td { border-bottom: none; }
+    .modal-table td.col-num { text-align: right; font-family: var(--font-mono); font-size: 0.82rem; }
+    .modal-table td.group-cell { color: var(--text-primary); font-weight: 500; }
+    .modal-table td.kv-key {
+      color: var(--text-muted); font-size: 0.75rem;
+      text-transform: uppercase; letter-spacing: 0.05em; width: 40%;
+    }
+    .modal-footer {
+      padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex; flex-wrap: wrap; gap: 10px;
+      flex-shrink: 0; background: rgba(255,255,255,0.02);
+    }
+    .modal-stat {
+      display: flex; flex-direction: column; gap: 3px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 7px; padding: 8px 12px;
+    }
+    .modal-stat-label { font-size: 0.7rem; color: var(--text-muted); }
+    .modal-stat-value { font-family: var(--font-mono); font-size: 0.88rem; font-weight: 600; }
+    .pct-ok  { color: #34d399; }
+    .pct-low { color: #fbbf24; }
+    .pct-hi  { color: #f87171; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="header-bar">
+  <div class="header-logo">
+    <a href="https://ehq.cl/" target="_blank" rel="noopener noreferrer">
+      <img src="../energon-classic-logo.png" class="header-logo-img" alt="Energon">
+    </a>
+    <div>
+      <h1>Dynamic Viewer</h1>
+      <div class="header-subtitle">JSON explorer with live stats</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <a href="../" class="btn btn-ghost" style="text-decoration:none">JSON Builder</a>
+    <button id="btn-new-json" class="btn btn-ghost hidden-el">Load new JSON</button>
+  </div>
+</div>
+
+<!-- ── Input View ── -->
+<div id="view-input">
+  <div class="input-card">
+    <div class="input-title">Paste or drop a JSON file</div>
+    <div class="drop-zone" id="drop-zone">
+      <textarea id="json-input" placeholder="Paste JSON here…&#10;&#10;Supported shapes:&#10;  [ { … }, … ]                      — flat array of records&#10;  { &quot;GROUP&quot;: { &quot;key&quot;: [ … ] } }   — grouped records"></textarea>
+    </div>
+    <div id="error-msg" class="error-msg"></div>
+    <div class="input-row">
+      <label class="file-label" for="file-input">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Upload File
+      </label>
+      <input type="file" id="file-input" accept=".json,application/json">
+      <button class="btn btn-primary" id="btn-load">Load →</button>
+    </div>
+    <div class="input-example">
+      or <button class="btn-example" id="btn-example">try the example dataset →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Viewer View ── -->
+<div id="view-viewer">
+  <div class="search-bar">
+    <div class="search-wrap">
+      <span class="search-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </span>
+      <input type="text" id="search-input" placeholder="Search across all records…">
+    </div>
+    <span class="match-count" id="match-count"></span>
+  </div>
+  <div class="viewer-body">
+    <div class="table-area">
+      <table id="data-table">
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+    <aside class="stats-sidebar" id="stats-sidebar"></aside>
+  </div>
+</div>
+
+<!-- ── Record Modal ── -->
+<div id="record-modal" class="modal-backdrop hidden-el" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" id="modal-close" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer hidden-el" id="modal-footer"></div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// Demo dataset
+// ─────────────────────────────────────────────────────────────
+const DEMO_DATA = {
+  "P1 — Revelations": {
+    "members": [
+      { "name": "Kazuya Toudou", "arcana": "Fool",      "shadows_defeated": 312, "sp_spent": 840,  "confidant_rank": 10, "party_share_%": 35.0 },
+      { "name": "Maki Sonomura", "arcana": "Priestess", "shadows_defeated": 198, "sp_spent": 620,  "confidant_rank":  9, "party_share_%": 25.0 },
+      { "name": "Masao Inaba",   "arcana": "Magician",  "shadows_defeated": 245, "sp_spent": 410,  "confidant_rank":  8, "party_share_%": 22.0 },
+      { "name": "Yukino Mayuzumi","arcana": "Lovers",   "shadows_defeated": 167, "sp_spent": 530,  "confidant_rank":  7, "party_share_%": 18.0 }
+    ]
+  },
+  "P2 — Innocent Sin": {
+    "members": [
+      { "name": "Tatsuya Suou",  "arcana": "Sun",       "shadows_defeated": 428, "sp_spent": 960,  "confidant_rank": 10, "party_share_%": 38.0 },
+      { "name": "Lisa Silverman","arcana": "Lovers",    "shadows_defeated": 215, "sp_spent": 780,  "confidant_rank":  8, "party_share_%": 27.0 },
+      { "name": "Eikichi Mishina","arcana": "Tower",    "shadows_defeated": 189, "sp_spent": 490,  "confidant_rank":  7, "party_share_%": 22.0 },
+      { "name": "Maya Amano",    "arcana": "Priestess", "shadows_defeated": 143, "sp_spent": 640,  "confidant_rank":  9, "party_share_%": 10.0 }
+    ]
+  },
+  "P3 — Reload": {
+    "members": [
+      { "name": "Makoto Yuki",   "arcana": "Fool",      "shadows_defeated": 534, "sp_spent": 1240, "confidant_rank": 10, "party_share_%": 32.0 },
+      { "name": "Yukari Takeba", "arcana": "Lovers",    "shadows_defeated": 312, "sp_spent": 890,  "confidant_rank":  9, "party_share_%": 25.0 },
+      { "name": "Junpei Iori",   "arcana": "Star",      "shadows_defeated": 287, "sp_spent": 560,  "confidant_rank":  8, "party_share_%": 22.0 },
+      { "name": "Mitsuru Kirijo","arcana": "Empress",   "shadows_defeated": 198, "sp_spent": 1100, "confidant_rank":  9, "party_share_%": 14.0 },
+      { "name": "Akihiko Sanada","arcana": "Emperor",   "shadows_defeated": 356, "sp_spent": 430,  "confidant_rank":  8, "party_share_%":  7.0 },
+      { "name": "Yu Narukami",   "arcana": "Fool",      "shadows_defeated": 445, "sp_spent": 980,  "confidant_rank":  9, "party_share_%": 12.0 },
+      { "name": "Ren Amamiya",   "arcana": "Fool",      "shadows_defeated": 521, "sp_spent": 1120, "confidant_rank": 10, "party_share_%": 10.0 }
+    ]
+  },
+  "P4 — Golden": {
+    "members": [
+      { "name": "Yu Narukami",   "arcana": "Fool",      "shadows_defeated": 612, "sp_spent": 1380, "confidant_rank": 10, "party_share_%": 30.0 },
+      { "name": "Yosuke Hanamura","arcana": "Magician", "shadows_defeated": 389, "sp_spent": 670,  "confidant_rank":  9, "party_share_%": 24.0 },
+      { "name": "Chie Satonaka", "arcana": "Chariot",   "shadows_defeated": 445, "sp_spent": 320,  "confidant_rank":  8, "party_share_%": 20.0 },
+      { "name": "Yukiko Amagi",  "arcana": "Priestess", "shadows_defeated": 267, "sp_spent": 1150, "confidant_rank":  8, "party_share_%": 15.0 },
+      { "name": "Kanji Tatsumi", "arcana": "Emperor",   "shadows_defeated": 398, "sp_spent": 280,  "confidant_rank":  7, "party_share_%": 14.0 }
+    ]
+  },
+  "P5 — Royal": {
+    "members": [
+      { "name": "Ren Amamiya",   "arcana": "Fool",      "shadows_defeated": 721, "sp_spent": 1560, "confidant_rank": 10, "party_share_%": 28.0 },
+      { "name": "Ryuji Sakamoto","arcana": "Chariot",   "shadows_defeated": 534, "sp_spent": 410,  "confidant_rank":  9, "party_share_%": 22.0 },
+      { "name": "Ann Takamaki",  "arcana": "Lovers",    "shadows_defeated": 312, "sp_spent": 980,  "confidant_rank":  9, "party_share_%": 20.0 },
+      { "name": "Yusuke Kitagawa","arcana": "Emperor",  "shadows_defeated": 289, "sp_spent": 720,  "confidant_rank":  8, "party_share_%": 16.0 },
+      { "name": "Makoto Niijima","arcana": "Priestess", "shadows_defeated": 356, "sp_spent": 890,  "confidant_rank":  9, "party_share_%": 14.0 },
+      { "name": "Yu Narukami",   "arcana": "Fool",      "shadows_defeated": 498, "sp_spent": 1050, "confidant_rank":  9, "party_share_%": 11.0 },
+      { "name": "Makoto Yuki",   "arcana": "Fool",      "shadows_defeated": 387, "sp_spent": 1180, "confidant_rank":  8, "party_share_%":  9.0 }
+    ]
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────
+let _structure = null; // { mode, groups, columns }
+
+// ─────────────────────────────────────────────────────────────
+// Utilities
+// ─────────────────────────────────────────────────────────────
+function escHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function fmt(n) {
+  if (Number.isInteger(n)) return n.toLocaleString();
+  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+// ─────────────────────────────────────────────────────────────
+// Structure Detection
+// ─────────────────────────────────────────────────────────────
+function detectStructure(parsed) {
+  let groups = [];
+  let mode;
+
+  if (Array.isArray(parsed)) {
+    mode = 'flat';
+    groups = [{ name: null, rows: parsed.filter(r => r && typeof r === 'object' && !Array.isArray(r)) }];
+  } else if (parsed && typeof parsed === 'object') {
+    mode = 'grouped';
+    const topKeys = Object.keys(parsed);
+
+    // Find the shared array key from the first group
+    let arrayKey = null;
+    for (const k of topKeys) {
+      const val = parsed[k];
+      if (val && typeof val === 'object' && !Array.isArray(val)) {
+        arrayKey = Object.keys(val).find(ik => Array.isArray(val[ik])) || null;
+        if (arrayKey) break;
+      }
+    }
+
+    for (const k of topKeys) {
+      const val = parsed[k];
+      let rows = [];
+      if (Array.isArray(val)) {
+        rows = val.filter(r => r && typeof r === 'object' && !Array.isArray(r));
+      } else if (val && typeof val === 'object') {
+        if (arrayKey && Array.isArray(val[arrayKey])) {
+          rows = val[arrayKey].filter(r => r && typeof r === 'object' && !Array.isArray(r));
+        } else {
+          // Fallback: first array property
+          const firstArr = Object.values(val).find(v => Array.isArray(v));
+          rows = firstArr ? firstArr.filter(r => r && typeof r === 'object' && !Array.isArray(r)) : [];
+        }
+      }
+      groups.push({ name: k, rows });
+    }
+  } else {
+    throw new Error('JSON must be an array or an object at the root level.');
+  }
+
+  // Collect columns: union of all field names across all rows
+  const fieldSet = new Set();
+  for (const g of groups) {
+    for (const row of g.rows) {
+      for (const k of Object.keys(row)) fieldSet.add(k);
+    }
+  }
+
+  // Infer type: number if every non-null value across all groups is numeric
+  const columns = [];
+  for (const name of fieldSet) {
+    let isNum = true;
+    outer: for (const g of groups) {
+      for (const row of g.rows) {
+        if (name in row && row[name] !== null && row[name] !== undefined) {
+          if (typeof row[name] !== 'number') { isNum = false; break outer; }
+        }
+      }
+    }
+    columns.push({ name, type: isNum ? 'number' : 'string' });
+  }
+
+  return { mode, groups, columns };
+}
+
+// ─────────────────────────────────────────────────────────────
+// Table Rendering
+// ─────────────────────────────────────────────────────────────
+function renderTable(structure) {
+  const { groups, columns, mode } = structure;
+  const isGrouped = mode === 'grouped';
+
+  // thead
+  const thead = document.getElementById('table-head');
+  thead.innerHTML = '';
+  const hrow = document.createElement('tr');
+  for (const col of columns) {
+    const th = document.createElement('th');
+    th.textContent = col.name;
+    if (col.type === 'number') th.classList.add('col-num');
+    hrow.appendChild(th);
+  }
+  thead.appendChild(hrow);
+
+  // tbody
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = '';
+  let rowIdx = 0;
+
+  for (const group of groups) {
+    // Group header row
+    if (isGrouped && group.name !== null) {
+      const groupRow = document.createElement('tr');
+      groupRow.className = 'row-group';
+      groupRow.dataset.group = group.name;
+      groupRow.dataset.originalIndex = rowIdx++;
+
+      const td = document.createElement('td');
+      td.colSpan = columns.length;
+      td.innerHTML =
+        `<div class="group-name">` +
+        `<svg class="group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>` +
+        `<span>${escHtml(group.name)}</span>` +
+        `<span class="group-badge" data-total="${group.rows.length}">${group.rows.length} rows</span>` +
+        `</div>`;
+      groupRow.appendChild(td);
+      tbody.appendChild(groupRow);
+
+      groupRow.addEventListener('click', () => {
+        const isCollapsed = groupRow.classList.toggle('collapsed');
+        groupRow.querySelector('.group-chevron').classList.toggle('collapsed', isCollapsed);
+        const dataRows = tbody.querySelectorAll(`.row-data[data-group="${CSS.escape(group.name)}"]`);
+        for (const r of dataRows) {
+          if (isCollapsed) {
+            r.dataset.collapsedByGroup = '1';
+            r.classList.add('hidden');
+          } else {
+            delete r.dataset.collapsedByGroup;
+            r.classList.remove('hidden'); // dimmed state is already set correctly
+          }
+        }
+      });
+    }
+
+    // Data rows
+    for (const row of group.rows) {
+      const tr = document.createElement('tr');
+      tr.className = 'row-data';
+      tr.dataset.originalIndex = rowIdx++;
+      if (isGrouped && group.name !== null) tr.dataset.group = group.name;
+
+      for (const col of columns) {
+        const td = document.createElement('td');
+        if (col.type === 'number') td.classList.add('col-num');
+        const val = row[col.name];
+        const raw = (val !== undefined && val !== null) ? String(val) : '';
+        td.dataset.raw = raw;
+        td.textContent = raw;
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Highlight
+// ─────────────────────────────────────────────────────────────
+function highlightText(text, term) {
+  if (!term || !text) return escHtml(text);
+  const lowerText = text.toLowerCase();
+  const lowerTerm = term.toLowerCase();
+  let result = '';
+  let idx = 0;
+  while (idx < text.length) {
+    const found = lowerText.indexOf(lowerTerm, idx);
+    if (found === -1) { result += escHtml(text.slice(idx)); break; }
+    result += escHtml(text.slice(idx, found));
+    result += `<mark>${escHtml(text.slice(found, found + term.length))}</mark>`;
+    idx = found + term.length;
+  }
+  return result;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Filter
+// ─────────────────────────────────────────────────────────────
+function applyFilter(term) {
+  const tbody = document.getElementById('table-body');
+  const lower = term.toLowerCase().trim();
+
+  const groupMatchCount = {}; // groupKey → count
+  let totalMatches = 0;
+
+  // Step 1: evaluate each visible data row — dim non-matches, highlight matches
+  const dataRows = [...tbody.querySelectorAll('.row-data')];
+  for (const tr of dataRows) {
+    if (tr.dataset.collapsedByGroup) { tr.dataset.matchResult = '0'; continue; }
+
+    const tds = tr.querySelectorAll('td');
+    let matches = !lower;
+    if (lower) {
+      for (const td of tds) {
+        if (td.dataset.raw.toLowerCase().includes(lower)) { matches = true; break; }
+      }
+    }
+
+    const groupKey = tr.dataset.group || '__flat__';
+    if (!groupMatchCount[groupKey]) groupMatchCount[groupKey] = 0;
+    if (matches) { groupMatchCount[groupKey]++; totalMatches++; }
+
+    tr.dataset.matchResult = matches ? '1' : '0';
+    tr.classList.toggle('hidden', !matches && !!lower);
+    tr.classList.remove('dimmed');
+
+    for (const td of tds) {
+      td.innerHTML = (lower && matches) ? highlightText(td.dataset.raw, lower) : escHtml(td.dataset.raw);
+    }
+  }
+
+  // Step 2: reorder DOM — matching groups first, matching rows first within each group
+  if (lower) {
+    const sections = _structure.groups.map(group => {
+      const gname = group.name;
+      const groupRow = gname !== null
+        ? tbody.querySelector(`.row-group[data-group="${CSS.escape(gname)}"]`)
+        : null;
+      const rows = [...tbody.querySelectorAll(
+        gname !== null ? `.row-data[data-group="${CSS.escape(gname)}"]` : '.row-data:not([data-group])'
+      )];
+      return { gname, groupRow, rows };
+    });
+
+    // Groups with at least one match float to top; ties preserve original order
+    sections.sort((a, b) => {
+      const aHas = (groupMatchCount[a.gname || '__flat__'] || 0) > 0 ? 0 : 1;
+      const bHas = (groupMatchCount[b.gname || '__flat__'] || 0) > 0 ? 0 : 1;
+      return aHas - bHas;
+    });
+
+    for (const { groupRow, rows } of sections) {
+      if (groupRow) tbody.appendChild(groupRow);
+      const matching    = rows.filter(r => r.dataset.matchResult === '1');
+      const nonMatching = rows.filter(r => r.dataset.matchResult !== '1');
+      for (const r of [...matching, ...nonMatching]) tbody.appendChild(r);
+    }
+  } else {
+    // Restore original insertion order
+    const allRows = [...tbody.querySelectorAll('tr')];
+    allRows.sort((a, b) => +a.dataset.originalIndex - +b.dataset.originalIndex);
+    for (const r of allRows) tbody.appendChild(r);
+  }
+
+  // Step 3: update group header badges and dim groups with zero matches
+  for (const groupRow of tbody.querySelectorAll('.row-group')) {
+    const gname = groupRow.dataset.group;
+    const count = groupMatchCount[gname] || 0;
+    const total = +groupRow.querySelector('.group-badge').dataset.total;
+    const badge = groupRow.querySelector('.group-badge');
+    badge.textContent = lower ? `${count} match${count !== 1 ? 'es' : ''}` : `${total} rows`;
+    groupRow.classList.toggle('hidden', !!lower && count === 0);
+    groupRow.classList.remove('group-dimmed');
+  }
+
+  // Match count chip
+  const matchCountEl = document.getElementById('match-count');
+  if (!lower) {
+    matchCountEl.textContent = '';
+    matchCountEl.className = 'match-count';
+  } else {
+    matchCountEl.textContent = `${totalMatches} match${totalMatches !== 1 ? 'es' : ''}`;
+    matchCountEl.className = 'match-count has-matches';
+  }
+
+  renderStats(lower, groupMatchCount);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Stats Sidebar
+// ─────────────────────────────────────────────────────────────
+function renderStats(lower, groupMatchCount) {
+  const sidebar = document.getElementById('stats-sidebar');
+  const { groups, columns, mode } = _structure;
+
+  // Collect matched rows
+  const matchedRows = [];
+  for (const group of groups) {
+    for (const row of group.rows) {
+      if (!lower) {
+        matchedRows.push(row);
+      } else {
+        const vals = Object.values(row).map(v =>
+          (v !== null && v !== undefined) ? String(v).toLowerCase() : ''
+        );
+        if (vals.some(v => v.includes(lower))) matchedRows.push(row);
+      }
+    }
+  }
+
+  const numCols = columns.filter(c => c.type === 'number');
+  let html = '';
+
+  // Summary card
+  const totalRows = groups.reduce((s, g) => s + g.rows.length, 0);
+  html += `<div>
+    <div class="stats-section-title">Summary</div>
+    <div class="stats-card">
+      <div class="stats-row">
+        <span class="stats-label">Matching rows</span>
+        <span class="stats-value">${matchedRows.length}</span>
+      </div>
+      <div class="stats-row">
+        <span class="stats-label">Total rows</span>
+        <span class="stats-value">${totalRows}</span>
+      </div>
+    </div>
+  </div>`;
+
+  // Numeric column stats
+  if (numCols.length > 0) {
+    html += `<div><div class="stats-section-title">Numeric Columns</div>`;
+    for (const col of numCols) {
+      const vals = matchedRows
+        .map(r => r[col.name])
+        .filter(v => v !== null && v !== undefined && typeof v === 'number');
+      if (vals.length === 0) continue;
+
+      const sum = vals.reduce((a, b) => a + b, 0);
+      const avg = sum / vals.length;
+      const min = Math.min(...vals);
+      const max = Math.max(...vals);
+
+      html += `<div class="stats-card">
+        <div class="stats-col-name">${escHtml(col.name)}</div>
+        <div class="stats-row"><span class="stats-label">Sum</span><span class="stats-value">${fmt(sum)}</span></div>
+        <div class="stats-row"><span class="stats-label">Avg</span><span class="stats-value">${fmt(avg)}</span></div>
+        <div class="stats-row"><span class="stats-label">Min</span><span class="stats-value">${fmt(min)}</span></div>
+        <div class="stats-row"><span class="stats-label">Max</span><span class="stats-value">${fmt(max)}</span></div>
+        <div class="stats-row"><span class="stats-label">Count</span><span class="stats-value">${vals.length}</span></div>`;
+
+      // 100% indicator for percentage columns
+      const colLower = col.name.toLowerCase();
+      if (colLower.includes('percent') || colLower.includes('%')) {
+        const diff = Math.round((100 - sum) * 10) / 10;
+        const rounded = Math.round(sum * 10) / 10;
+        if (Math.abs(sum - 100) < 0.05) {
+          html += `<div class="percent-indicator percent-ok">✓ Sums to 100%</div>`;
+        } else if (sum < 100) {
+          html += `<div class="percent-indicator percent-low">⚠ Needs ${diff} more (${rounded}%)</div>`;
+        } else {
+          html += `<div class="percent-indicator percent-hi">⚠ Over by ${Math.abs(diff)} (${rounded}%)</div>`;
+        }
+      }
+
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Groups breakdown
+  if (mode === 'grouped') {
+    html += `<div><div class="stats-section-title">Groups</div><div class="stats-card"><div>`;
+    for (const group of groups) {
+      const count = lower ? (groupMatchCount[group.name] || 0) : group.rows.length;
+      html += `<div class="group-stat-row">
+        <span class="group-stat-name">${escHtml(group.name)}</span>
+        <span class="group-stat-count">${count}</span>
+      </div>`;
+    }
+    html += `</div></div></div>`;
+  }
+
+  sidebar.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Load & View Transition
+// ─────────────────────────────────────────────────────────────
+function loadJSON(text) {
+  const errEl = document.getElementById('error-msg');
+  errEl.classList.remove('visible');
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    errEl.textContent = 'Invalid JSON: ' + e.message;
+    errEl.classList.add('visible');
+    return;
+  }
+
+  try {
+    _structure = detectStructure(parsed);
+  } catch (e) {
+    errEl.textContent = e.message;
+    errEl.classList.add('visible');
+    return;
+  }
+
+  renderTable(_structure);
+  document.getElementById('search-input').value = '';
+  applyFilter('');
+
+  // Switch views
+  document.getElementById('view-input').style.display = 'none';
+  document.getElementById('view-viewer').classList.add('active');
+  document.getElementById('btn-new-json').classList.remove('hidden-el');
+}
+
+// ─────────────────────────────────────────────────────────────
+// Event Handlers
+// ─────────────────────────────────────────────────────────────
+
+// Example dataset button
+document.getElementById('btn-example').addEventListener('click', () => {
+  loadJSON(JSON.stringify(DEMO_DATA));
+});
+
+// Load button
+document.getElementById('btn-load').addEventListener('click', () => {
+  const text = document.getElementById('json-input').value.trim();
+  if (!text) {
+    const errEl = document.getElementById('error-msg');
+    errEl.textContent = 'Please paste JSON or upload a file first.';
+    errEl.classList.add('visible');
+    return;
+  }
+  loadJSON(text);
+});
+
+// Load new JSON button
+document.getElementById('btn-new-json').addEventListener('click', () => {
+  document.getElementById('view-viewer').classList.remove('active');
+  document.getElementById('view-input').style.display = '';
+  document.getElementById('btn-new-json').classList.add('hidden-el');
+  document.getElementById('json-input').value = '';
+  document.getElementById('error-msg').classList.remove('visible');
+});
+
+// File picker
+document.getElementById('file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => loadJSON(ev.target.result);
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// Drag-and-drop onto drop zone
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('drag-over');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => loadJSON(ev.target.result);
+    reader.readAsText(file);
+  } else {
+    const text = e.dataTransfer.getData('text');
+    if (text) loadJSON(text);
+  }
+});
+
+// Search (debounced 150ms)
+let _searchTimer = null;
+document.getElementById('search-input').addEventListener('input', (e) => {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => applyFilter(e.target.value), 150);
+});
+
+// ─────────────────────────────────────────────────────────────
+// Record Modal
+// ─────────────────────────────────────────────────────────────
+function openRecordModal(tr) {
+  const { groups, columns, mode } = _structure;
+  const stringCols = columns.filter(c => c.type === 'string');
+  const numCols    = columns.filter(c => c.type === 'number');
+
+  // Composite key: all string column values from the clicked row
+  const tds = tr.querySelectorAll('td');
+  const keyValues = {};
+  columns.forEach((col, i) => {
+    if (col.type === 'string') keyValues[col.name] = tds[i].dataset.raw;
+  });
+
+  // Find every row across all groups that shares the same string values
+  const matches = [];
+  for (const group of groups) {
+    for (const row of group.rows) {
+      if (stringCols.every(col => String(row[col.name] ?? '') === keyValues[col.name])) {
+        matches.push({ groupName: group.name, row });
+      }
+    }
+  }
+
+  // Title
+  const titleParts = stringCols.map(c => keyValues[c.name]).filter(Boolean);
+  document.getElementById('modal-title').textContent = titleParts.join(' · ') || 'Record Detail';
+
+  // Body
+  let bodyHtml = '';
+  if (mode === 'grouped') {
+    bodyHtml += `<table class="modal-table"><thead><tr><th>Project</th>`;
+    for (const col of numCols) bodyHtml += `<th class="col-num">${escHtml(col.name)}</th>`;
+    bodyHtml += `</tr></thead><tbody>`;
+    for (const { groupName, row } of matches) {
+      bodyHtml += `<tr><td class="group-cell">${escHtml(groupName)}</td>`;
+      for (const col of numCols) {
+        const val = row[col.name];
+        bodyHtml += `<td class="col-num">${val !== undefined && val !== null ? fmt(val) : '—'}</td>`;
+      }
+      bodyHtml += `</tr>`;
+    }
+    bodyHtml += `</tbody></table>`;
+  } else {
+    // Flat mode: key-value detail view
+    bodyHtml += `<table class="modal-table"><tbody>`;
+    columns.forEach((col, i) => {
+      bodyHtml += `<tr><td class="kv-key">${escHtml(col.name)}</td>` +
+        `<td class="${col.type === 'number' ? 'col-num' : ''}">${escHtml(tds[i].dataset.raw) || '—'}</td></tr>`;
+    });
+    bodyHtml += `</tbody></table>`;
+  }
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+
+  // Footer: totals for numeric columns (grouped mode)
+  const footer = document.getElementById('modal-footer');
+  if (mode === 'grouped' && numCols.length > 0) {
+    let footerHtml = '';
+    for (const col of numCols) {
+      const vals = matches.map(m => m.row[col.name]).filter(v => typeof v === 'number');
+      if (vals.length === 0) continue;
+      const sum = vals.reduce((a, b) => a + b, 0);
+
+      let indicator = '';
+      const colLower = col.name.toLowerCase();
+      if (colLower.includes('percent') || colLower.includes('%')) {
+        const diff = Math.round((100 - sum) * 10) / 10;
+        if (Math.abs(sum - 100) < 0.05) {
+          indicator = ` <span class="pct-ok">✓ 100%</span>`;
+        } else if (sum < 100) {
+          indicator = ` <span class="pct-low">needs ${diff} more</span>`;
+        } else {
+          indicator = ` <span class="pct-hi">over by ${Math.abs(diff)}</span>`;
+        }
+      }
+
+      footerHtml += `<div class="modal-stat">
+        <span class="modal-stat-label">${escHtml(col.name)}</span>
+        <span class="modal-stat-value">${fmt(sum)}${indicator}</span>
+      </div>`;
+    }
+    footer.innerHTML = footerHtml;
+    footer.classList.toggle('hidden-el', !footerHtml);
+  } else {
+    footer.classList.add('hidden-el');
+  }
+
+  document.getElementById('record-modal').classList.remove('hidden-el');
+}
+
+function closeModal() {
+  document.getElementById('record-modal').classList.add('hidden-el');
+}
+
+// Row click → open modal
+document.getElementById('table-body').addEventListener('click', (e) => {
+  const tr = e.target.closest('.row-data');
+  if (tr && !tr.classList.contains('hidden')) openRecordModal(tr);
+});
+
+// Close on X button, backdrop click, or Escape
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('record-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>
