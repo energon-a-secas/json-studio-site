@@ -1,4 +1,4 @@
-# JSON Builder — Visual JSON Editor
+# JSON Studio — Visual JSON Tools
 
 A drag-and-drop JSON editor for building any JSON structure visually. No install, no build step.
 
@@ -35,4 +35,4 @@ Rendering: every state mutation calls `render()` → rebuilds `#tree-root` DOM f
 
 ## Live
 
-→ [ehq.cl](https://ehq.cl/)
+→ [jsonstudio.neorgon.com](https://jsonstudio.neorgon.com/)

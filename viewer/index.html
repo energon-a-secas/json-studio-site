@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dynamic Viewer — JSON Explorer | Energon</title>
+  <title>Dynamic Viewer</title>
   <meta name="description" content="Paste or upload JSON and explore records as a searchable nested table with live aggregate stats.">
   <meta name="theme-color" content="#040714">
   <link rel="icon" type="image/x-icon" href="../favicon.ico" />
@@ -61,6 +61,15 @@
     .header-logo h1 { font-size: 1.2em; font-weight: 600; letter-spacing: 0.5px; }
     .header-subtitle { font-size: 0.82em; color: rgba(255,255,255,0.72); font-weight: 500; margin-top: 3px; }
     .header-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+    /* ── Home icon ── */
+    .header-home {
+      display: flex; align-items: center; padding: 5px;
+      color: rgba(255,255,255,0.9); text-decoration: none; border-radius: 6px;
+      transition: color .2s, background .2s; flex-shrink: 0;
+    }
+    .header-home:hover { color: #fff; background: rgba(255,255,255,0.12); }
+    .header-home svg { width: 34px; height: 34px; display: block; }
 
     /* ── Buttons ── */
     .btn {
@@ -420,6 +429,9 @@
   <div class="header-actions">
     <a href="../" class="btn btn-ghost" style="text-decoration:none">JSON Builder</a>
     <button id="btn-new-json" class="btn btn-ghost hidden-el">Load new JSON</button>
+    <a href="https://neorgon.com/" class="header-home" title="neorgon.com" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    </a>
   </div>
 </div>
 
