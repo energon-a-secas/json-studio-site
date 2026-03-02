@@ -295,6 +295,10 @@
           Download .json
         </button>
         <span class="status-chip status-ok hidden-el" id="copy-chip">Copied!</span>
+        <button class="btn btn-primary btn-sm hidden-el" id="btn-open-viewer" style="margin-left:auto;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Open in Viewer
+        </button>
       </div>
     </div>
 
@@ -569,10 +573,14 @@ function clearError() {
   errorEl.classList.remove('visible');
 }
 
+const btnOpenViewer = document.getElementById('btn-open-viewer');
+
 function setOutput(text) {
   outputEl.value = text;
   btnCopy.disabled = !text;
   btnDl.disabled   = !text;
+  if (text) btnOpenViewer.classList.remove('hidden-el');
+  else btnOpenViewer.classList.add('hidden-el');
 }
 
 document.getElementById('btn-example').addEventListener('click', () => {
@@ -618,6 +626,11 @@ document.getElementById('btn-download').addEventListener('click', () => {
   a.href = url; a.download = 'scrambled.json';
   a.click();
   URL.revokeObjectURL(url);
+});
+
+btnOpenViewer.addEventListener('click', () => {
+  try { sessionStorage.setItem('viewer-import', outputEl.value); } catch (e) {}
+  window.open('../viewer/', '_blank');
 });
 
 document.getElementById('file-input').addEventListener('change', (e) => {

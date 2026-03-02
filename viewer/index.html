@@ -26,6 +26,12 @@
       --warning: #f59e0b;
       --font: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       --font-mono: 'SF Mono', 'Fira Code', monospace;
+      --active-bg: rgba(0,99,229,0.15);
+      --active-color: #60a5fa;
+      --active-border: rgba(0,99,229,0.3);
+      --shadow-sm: 0 4px 16px rgba(0,0,0,0.5);
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.55);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.55);
     }
 
     body {
@@ -86,6 +92,7 @@
       border: 1px solid var(--border);
     }
     .btn-ghost:hover { background: rgba(255,255,255,0.14); }
+    .btn-sm { padding: 5px 12px; font-size: 0.82rem; }
 
     /* ── Input View ── */
     #view-input {
@@ -155,15 +162,20 @@
     .input-example {
       font-size: 0.82rem;
       color: var(--text-muted);
-      text-align: center;
+    }
+    .example-buttons {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;
     }
     .btn-example {
-      background: none; border: none; cursor: pointer;
-      color: var(--accent); font-size: 0.82rem;
-      font-family: var(--font); padding: 0;
-      text-decoration: underline; text-underline-offset: 2px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 7px; cursor: pointer;
+      color: var(--text-secondary); font-size: 0.82rem;
+      font-family: var(--font); padding: 6px 14px;
+      transition: background 0.15s, color 0.15s;
+      display: flex; flex-direction: column; gap: 1px; text-align: left;
     }
-    .btn-example:hover { color: var(--accent-bright); }
+    .btn-example:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+    .btn-example-sub { font-size: 0.72rem; color: var(--text-muted); }
 
     .error-msg {
       color: var(--danger); font-size: 0.85rem;
@@ -216,6 +228,29 @@
 
     .match-count { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
     .match-count.has-matches { color: var(--text-secondary); }
+
+    /* ── Regex toggle ── */
+    .btn-regex {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: 1px solid transparent; border-radius: 5px;
+      padding: 2px 7px; font-size: 0.75rem; font-family: var(--font-mono);
+      color: var(--text-muted); cursor: pointer; transition: all 0.12s;
+      line-height: 1.6; user-select: none;
+    }
+    .btn-regex:hover { color: var(--text-secondary); border-color: var(--border); }
+    .btn-regex.active { color: #a78bfa; background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.35); }
+    #search-input.regex-mode { padding-right: 46px; }
+    #search-input.regex-invalid { border-color: var(--danger) !important; }
+
+    /* ── Active filter badge ── */
+    .filter-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+      background: var(--active-bg); color: var(--active-color);
+      border: 1px solid var(--active-border); cursor: pointer; white-space: nowrap;
+      transition: background 0.12s;
+    }
+    .filter-badge:hover { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.3); }
 
     /* ── Main layout ── */
     .viewer-body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
@@ -341,6 +376,93 @@
 
     .hidden-el { display: none !important; }
 
+    /* ── Column filter bar ── */
+    .filter-bar {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+      padding: 8px 16px; border-bottom: 1px solid var(--border-subtle);
+      background: rgba(255,255,255,0.015);
+      flex-shrink: 0;
+    }
+    .filter-bar-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+    .filter-group {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border-subtle);
+      border-radius: 8px; padding: 3px 6px 3px 8px;
+    }
+    .filter-group-name { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-right: 2px; }
+    .filter-chip {
+      padding: 2px 9px; border-radius: 5px; font-size: 0.73rem;
+      cursor: pointer; background: rgba(255,255,255,0.06); color: var(--text-muted);
+      border: 1px solid transparent; user-select: none; transition: all 0.1s; white-space: nowrap;
+    }
+    .filter-chip:hover { background: rgba(255,255,255,0.12); color: var(--text-secondary); }
+    .filter-chip.active { background: var(--active-bg); color: var(--active-color); border: 1px solid var(--active-border); }
+    .filter-clear { font-size: 0.7rem; color: var(--text-muted); cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+    .filter-clear:hover { color: var(--danger); background: rgba(239,68,68,0.1); }
+
+    /* ── Column visibility dropdown ── */
+    .cols-dropdown-wrap { position: relative; }
+    .cols-dropdown {
+      position: absolute; top: calc(100% + 6px); right: 0; z-index: 50;
+      background: #0d0a1a; border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 6px;
+      min-width: 180px; max-height: 320px; overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .cols-dropdown-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 10px; border-radius: 6px; cursor: pointer;
+      font-size: 0.82rem; color: var(--text-secondary); user-select: none;
+    }
+    .cols-dropdown-item:hover { background: rgba(255,255,255,0.06); }
+    .cols-dropdown-item input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
+    .cols-dropdown-item.hidden-col { color: var(--text-muted); }
+
+    /* ── Heat map ── */
+    td.heat-cell { transition: background-color 0.2s; }
+    #btn-heat.active { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    #btn-sparklines.active { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+
+    /* ── Sparklines ── */
+    .spark-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .spark-track { width: 100%; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.08); }
+    .spark-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.2s; }
+
+    /* ── Keyboard-focused row ── */
+    .row-data.keyboard-focused td {
+      background: rgba(0,99,229,0.1) !important;
+      outline: 1px solid rgba(0,99,229,0.25);
+      outline-offset: -1px;
+    }
+
+    /* ── Copy-row button ── */
+    .copy-row-btn {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      opacity: 0; transition: opacity 0.12s;
+      background: rgba(255,255,255,0.09); border: 1px solid var(--border);
+      border-radius: 5px; padding: 2px 8px;
+      font-size: 0.7rem; color: var(--text-muted); cursor: pointer;
+      display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+      font-family: var(--font);
+    }
+    tr.row-data:hover .copy-row-btn { opacity: 1; }
+    .copy-row-btn:hover { background: rgba(255,255,255,0.18); color: var(--text-primary); }
+    .row-data td:last-child { position: relative; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 999;
+      background: #1a1730; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px; padding: 10px 16px;
+      font-size: 0.84rem; color: var(--text-primary);
+      box-shadow: var(--shadow-md);
+      pointer-events: none;
+      transform: translateY(8px); opacity: 0;
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+
     /* ── Nested object badge ── */
     .nested-badge {
       display: inline-flex; align-items: center; gap: 4px;
@@ -366,6 +488,13 @@
       color: transparent; border-bottom: none !important;
     }
 
+    /* ── Column sorting ── */
+    thead th.sortable { cursor: pointer; user-select: none; }
+    thead th.sortable:hover { color: var(--text-secondary); background: rgba(255,255,255,0.04); }
+    thead th .sort-icon { margin-left: 5px; opacity: 0.25; font-style: normal; }
+    thead th.sort-asc  .sort-icon,
+    thead th.sort-desc .sort-icon { opacity: 1; color: var(--accent); }
+
     /* ── Period filter pills (inside nested modal) ── */
     .nested-filter-bar {
       padding: 12px 16px 8px;
@@ -381,7 +510,7 @@
       transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
     .nested-filter-pill:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
-    .nested-filter-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .nested-filter-pill.active { background: var(--active-bg); color: var(--active-color); border: 1px solid var(--active-border); }
 
     /* ── Totals row inside nested table ── */
     .nested-totals-row td {
@@ -425,7 +554,7 @@
     }
     .btn-pivot-toggle:hover { background: rgba(255,255,255,0.14); }
     .btn-pivot-toggle.active {
-      background: var(--accent); color: #fff; border-color: var(--accent);
+      background: var(--active-bg); color: var(--active-color); border: 1px solid var(--active-border);
     }
 
     /* ── Pivot Toolbar ── */
@@ -494,6 +623,70 @@
       text-align: right;
       font-family: var(--font-mono); font-size: 0.82rem;
       font-weight: 600; color: var(--text-primary);
+    }
+
+    /* ── Timeline Chart ── */
+    .timeline-area {
+      padding: 20px 24px 24px;
+      display: flex; flex-direction: column; gap: 18px;
+      overflow-y: auto;
+    }
+    .timeline-chart-wrap {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 20px 20px 12px;
+      position: relative;
+    }
+    .timeline-chart-title {
+      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.5px;
+      color: var(--text-muted); text-transform: uppercase; margin-bottom: 16px;
+    }
+    .timeline-svg { display: block; width: 100%; overflow: visible; }
+    .timeline-axis-label { font-size: 11px; fill: var(--text-muted); font-family: var(--font); }
+    .timeline-grid { stroke: rgba(255,255,255,0.06); stroke-dasharray: 3 4; }
+    .timeline-line { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+    .timeline-dot {
+      r: 4.5; stroke-width: 2; stroke: var(--bg);
+      cursor: pointer; transition: r 0.12s;
+    }
+    .timeline-dot:hover { r: 7; }
+    .timeline-legend {
+      display: flex; flex-wrap: wrap; gap: 10px 18px;
+      margin-top: 14px;
+    }
+    .timeline-legend-item {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 0.82rem; color: var(--text-secondary);
+    }
+    .timeline-legend-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .timeline-tooltip {
+      position: fixed; z-index: 300;
+      background: #0d0a1a; border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px;
+      font-size: 0.8rem; color: var(--text-primary);
+      pointer-events: none; opacity: 0;
+      transition: opacity 0.1s;
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+    }
+    .timeline-tooltip.visible { opacity: 1; }
+    .timeline-tooltip strong { display: block; margin-bottom: 2px; color: var(--text-muted); font-weight: 500; }
+
+    .btn-chart-toggle {
+      background: rgba(255,255,255,0.07);
+      color: var(--text-secondary); border: 1px solid var(--border);
+      border-radius: 7px; padding: 5px 12px; font-size: 0.82rem;
+      font-family: var(--font); font-weight: 500; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .btn-chart-toggle:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
+    .btn-chart-toggle.active {
+      background: rgba(16,185,129,0.15); color: #10b981;
+      border-color: rgba(16,185,129,0.35);
     }
 
     /* ── Record Modal ── */
@@ -611,7 +804,8 @@
       <button class="btn btn-primary" id="btn-load">Load →</button>
     </div>
     <div class="input-example">
-      or <button class="btn-example" id="btn-example">try the example dataset →</button>
+      Try an example:
+      <div class="example-buttons" id="example-buttons"></div>
     </div>
   </div>
 </div>
@@ -626,12 +820,28 @@
         </svg>
       </span>
       <input type="text" id="search-input" placeholder="Search across all records…">
+      <button class="btn-regex" id="btn-regex" title="Toggle regex search">.*</button>
     </div>
     <span class="match-count" id="match-count"></span>
+    <span class="filter-badge hidden-el" id="filter-badge"></span>
+    <button class="btn btn-ghost btn-sm hidden-el" id="btn-collapse-all">Collapse All</button>
+    <button class="btn btn-ghost btn-sm hidden-el" id="btn-export-csv">CSV</button>
+    <button class="btn btn-ghost btn-sm hidden-el" id="btn-sparklines">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="14" width="4" height="6" rx="1"/><rect x="9" y="9" width="4" height="11" rx="1"/><rect x="16" y="4" width="4" height="16" rx="1"/></svg>
+      Bars
+    </button>
+    <button class="btn btn-ghost btn-sm hidden-el" id="btn-heat">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2C8 2 6 6 6 10c0 3.5 2 6 4 8l1 1 1-1c2-2 5-4.5 5-8 0-4-2-8-5-8z"/></svg>
+      Heat
+    </button>
+    <div class="cols-dropdown-wrap">
+      <button class="btn btn-ghost btn-sm hidden-el" id="btn-columns">Columns ▾</button>
+      <div class="cols-dropdown hidden-el" id="cols-dropdown"></div>
+    </div>
     <button class="btn btn-pivot-toggle hidden-el" id="btn-pivot">Pivot</button>
   </div>
   <div class="pivot-toolbar hidden-el" id="pivot-toolbar">
-    <button class="btn btn-ghost" id="btn-exit-pivot" style="padding:5px 12px;font-size:0.82rem;">
+    <button class="btn btn-ghost btn-sm" id="btn-exit-pivot">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
       Table
     </button>
@@ -640,7 +850,17 @@
     <select class="pivot-select" id="pivot-user-select"></select>
     <span class="pivot-toolbar-label">Metric</span>
     <select class="pivot-select" id="pivot-metric-select"></select>
+    <span style="width:1px;height:20px;background:var(--border);flex-shrink:0;margin-left:4px;"></span>
+    <button class="btn-chart-toggle" id="btn-chart-toggle">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Timeline
+    </button>
+    <button class="btn-ghost btn btn-sm hidden-el" id="btn-period-order">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+      <span id="btn-period-order-label">1m → 12m</span>
+    </button>
   </div>
+  <div class="filter-bar hidden-el" id="filter-bar"></div>
   <div class="viewer-body">
     <div class="table-area" id="table-area">
       <table id="data-table">
@@ -651,6 +871,7 @@
         <thead id="pivot-table-head"></thead>
         <tbody id="pivot-table-body"></tbody>
       </table>
+      <div class="timeline-area hidden-el" id="timeline-area"></div>
     </div>
     <aside class="stats-sidebar" id="stats-sidebar"></aside>
   </div>
@@ -676,55 +897,95 @@
 // ─────────────────────────────────────────────────────────────
 // Demo dataset
 // ─────────────────────────────────────────────────────────────
-const DEMO_DATA = {
-  "P1 — Revelations": {
-    "members": [
-      { "name": "Kazuya Toudou", "arcana": "Fool",      "shadows_defeated": 312, "sp_spent": 840,  "confidant_rank": 10, "party_share_%": 35.0 },
-      { "name": "Maki Sonomura", "arcana": "Priestess", "shadows_defeated": 198, "sp_spent": 620,  "confidant_rank":  9, "party_share_%": 25.0 },
-      { "name": "Masao Inaba",   "arcana": "Magician",  "shadows_defeated": 245, "sp_spent": 410,  "confidant_rank":  8, "party_share_%": 22.0 },
-      { "name": "Yukino Mayuzumi","arcana": "Lovers",   "shadows_defeated": 167, "sp_spent": 530,  "confidant_rank":  7, "party_share_%": 18.0 }
+const DEMOS = [
+  {
+    label: 'Sales Orders', sub: 'Flat array',
+    data: [
+      { order_id: 'ORD-001', customer: 'Alice Brown',    product: 'Laptop Pro',     qty: 1, unit_price: 1299.99, total: 1299.99, status: 'shipped',   region: 'West'  },
+      { order_id: 'ORD-002', customer: 'Bob Chen',       product: 'Wireless Mouse', qty: 3, unit_price:   29.99, total:   89.97, status: 'delivered', region: 'East'  },
+      { order_id: 'ORD-003', customer: 'Carol Davis',    product: 'USB-C Hub',      qty: 2, unit_price:   49.99, total:   99.98, status: 'pending',   region: 'North' },
+      { order_id: 'ORD-004', customer: 'Dave Evans',     product: 'Laptop Pro',     qty: 1, unit_price: 1299.99, total: 1299.99, status: 'shipped',   region: 'East'  },
+      { order_id: 'ORD-005', customer: 'Eve Foster',     product: 'Monitor 27"',    qty: 1, unit_price:  399.00, total:  399.00, status: 'delivered', region: 'West'  },
+      { order_id: 'ORD-006', customer: 'Frank Garcia',   product: 'Mechanical KB',  qty: 2, unit_price:   89.99, total:  179.98, status: 'pending',   region: 'South' },
+      { order_id: 'ORD-007', customer: 'Grace Hall',     product: 'Webcam HD',      qty: 1, unit_price:   79.99, total:   79.99, status: 'returned',  region: 'West'  },
+      { order_id: 'ORD-008', customer: 'Hank Irving',    product: 'USB-C Hub',      qty: 4, unit_price:   49.99, total:  199.96, status: 'shipped',   region: 'North' },
+      { order_id: 'ORD-009', customer: 'Iris James',     product: 'Wireless Mouse', qty: 1, unit_price:   29.99, total:   29.99, status: 'delivered', region: 'East'  },
+      { order_id: 'ORD-010', customer: 'Jack Kim',       product: 'Monitor 27"',    qty: 2, unit_price:  399.00, total:  798.00, status: 'shipped',   region: 'South' },
+      { order_id: 'ORD-011', customer: 'Karen Lee',      product: 'Laptop Pro',     qty: 1, unit_price: 1299.99, total: 1299.99, status: 'delivered', region: 'West'  },
+      { order_id: 'ORD-012', customer: 'Leo Martin',     product: 'Webcam HD',      qty: 3, unit_price:   79.99, total:  239.97, status: 'pending',   region: 'North' }
     ]
   },
-  "P2 — Innocent Sin": {
-    "members": [
-      { "name": "Tatsuya Suou",  "arcana": "Sun",       "shadows_defeated": 428, "sp_spent": 960,  "confidant_rank": 10, "party_share_%": 38.0 },
-      { "name": "Lisa Silverman","arcana": "Lovers",    "shadows_defeated": 215, "sp_spent": 780,  "confidant_rank":  8, "party_share_%": 27.0 },
-      { "name": "Eikichi Mishina","arcana": "Tower",    "shadows_defeated": 189, "sp_spent": 490,  "confidant_rank":  7, "party_share_%": 22.0 },
-      { "name": "Maya Amano",    "arcana": "Priestess", "shadows_defeated": 143, "sp_spent": 640,  "confidant_rank":  9, "party_share_%": 10.0 }
-    ]
+  {
+    label: 'Team Stats', sub: 'Grouped by department',
+    data: {
+      'Engineering': { members: [
+        { name: 'Sam Torres',  role: 'Backend',  level: 'Senior', tickets_closed: 87, pr_reviews: 34, bugs_filed: 12, velocity: 42.5, satisfaction: 4.8 },
+        { name: 'Mia Patel',   role: 'Frontend', level: 'Mid',    tickets_closed: 61, pr_reviews: 28, bugs_filed:  8, velocity: 36.0, satisfaction: 4.5 },
+        { name: 'Raj Gupta',   role: 'DevOps',   level: 'Senior', tickets_closed: 45, pr_reviews: 19, bugs_filed:  5, velocity: 51.0, satisfaction: 4.9 },
+        { name: 'Lily Zhang',  role: 'Backend',  level: 'Junior', tickets_closed: 33, pr_reviews: 11, bugs_filed: 15, velocity: 24.0, satisfaction: 4.2 },
+        { name: 'Owen Clarke', role: 'QA',       level: 'Mid',    tickets_closed: 72, pr_reviews:  8, bugs_filed: 41, velocity: 38.5, satisfaction: 4.6 }
+      ]},
+      'Product': { members: [
+        { name: 'Nina Ross', role: 'PM',       level: 'Senior', tickets_closed: 21, pr_reviews: 5, bugs_filed: 3, velocity: 28.0, satisfaction: 4.7 },
+        { name: 'Tom Baker', role: 'Designer', level: 'Mid',    tickets_closed: 18, pr_reviews: 9, bugs_filed: 2, velocity: 22.0, satisfaction: 4.4 },
+        { name: 'Amy Chen',  role: 'PM',       level: 'Junior', tickets_closed: 14, pr_reviews: 3, bugs_filed: 1, velocity: 18.5, satisfaction: 4.1 }
+      ]},
+      'Marketing': { members: [
+        { name: 'Dan Kim',   role: 'Growth',  level: 'Senior', tickets_closed: 12, pr_reviews: 2, bugs_filed: 0, velocity: 15.0, satisfaction: 4.6 },
+        { name: 'Sara Hill', role: 'Content', level: 'Mid',    tickets_closed:  9, pr_reviews: 1, bugs_filed: 0, velocity: 11.0, satisfaction: 4.3 },
+        { name: 'Jake Ford', role: 'SEO',     level: 'Junior', tickets_closed:  6, pr_reviews: 0, bugs_filed: 0, velocity:  8.5, satisfaction: 3.9 }
+      ]},
+      'Sales': { members: [
+        { name: 'Cleo Ward', role: 'AE',  level: 'Senior', tickets_closed: 31, pr_reviews: 1, bugs_filed: 2, velocity: 19.0, satisfaction: 4.8 },
+        { name: 'Ben Stone', role: 'SDR', level: 'Junior', tickets_closed: 28, pr_reviews: 0, bugs_filed: 1, velocity: 16.5, satisfaction: 4.2 },
+        { name: 'Zoe Marsh', role: 'AE',  level: 'Mid',    tickets_closed: 35, pr_reviews: 2, bugs_filed: 3, velocity: 21.0, satisfaction: 4.5 }
+      ]}
+    }
   },
-  "P3 — Reload": {
-    "members": [
-      { "name": "Makoto Yuki",   "arcana": "Fool",      "shadows_defeated": 534, "sp_spent": 1240, "confidant_rank": 10, "party_share_%": 32.0 },
-      { "name": "Yukari Takeba", "arcana": "Lovers",    "shadows_defeated": 312, "sp_spent": 890,  "confidant_rank":  9, "party_share_%": 25.0 },
-      { "name": "Junpei Iori",   "arcana": "Star",      "shadows_defeated": 287, "sp_spent": 560,  "confidant_rank":  8, "party_share_%": 22.0 },
-      { "name": "Mitsuru Kirijo","arcana": "Empress",   "shadows_defeated": 198, "sp_spent": 1100, "confidant_rank":  9, "party_share_%": 14.0 },
-      { "name": "Akihiko Sanada","arcana": "Emperor",   "shadows_defeated": 356, "sp_spent": 430,  "confidant_rank":  8, "party_share_%":  7.0 },
-      { "name": "Yu Narukami",   "arcana": "Fool",      "shadows_defeated": 445, "sp_spent": 980,  "confidant_rank":  9, "party_share_%": 12.0 },
-      { "name": "Ren Amamiya",   "arcana": "Fool",      "shadows_defeated": 521, "sp_spent": 1120, "confidant_rank": 10, "party_share_%": 10.0 }
-    ]
+  {
+    label: 'Project Activity', sub: 'Grouped + nested history',
+    data: {
+      'COSP': { users: [
+        { name: 'Dave',  role: 'lead',     history: { '12m': { tickets: 14, dynamic_percentage: 13.3 }, '6m': { tickets: 6,  dynamic_percentage: 17.1 }, '3m': { tickets: 0, dynamic_percentage: 0.0  }, '1m': { tickets: 0, dynamic_percentage: 0.0  } } },
+        { name: 'Alice', role: 'member',   history: { '12m': { tickets:  8, dynamic_percentage:  8.4 }, '6m': { tickets: 4,  dynamic_percentage: 11.2 }, '3m': { tickets: 2, dynamic_percentage: 9.5  }, '1m': { tickets: 1, dynamic_percentage: 7.3  } } },
+        { name: 'Bob',   role: 'member',   history: { '12m': { tickets:  5, dynamic_percentage:  5.1 }, '6m': { tickets: 3,  dynamic_percentage:  7.8 }, '3m': { tickets: 1, dynamic_percentage: 4.2  }, '1m': { tickets: 0, dynamic_percentage: 0.0  } } }
+      ]},
+      'ACME': { users: [
+        { name: 'Dave',  role: 'member',   history: { '12m': { tickets:  9, dynamic_percentage: 11.2 }, '6m': { tickets: 4,  dynamic_percentage: 12.5 }, '3m': { tickets: 1, dynamic_percentage: 5.1  }, '1m': { tickets: 2, dynamic_percentage: 8.4  } } },
+        { name: 'Carol', role: 'lead',     history: { '12m': { tickets: 22, dynamic_percentage: 19.7 }, '6m': { tickets: 11, dynamic_percentage: 22.4 }, '3m': { tickets: 5, dynamic_percentage: 18.3 }, '1m': { tickets: 3, dynamic_percentage: 14.6 } } },
+        { name: 'Alice', role: 'reviewer', history: { '12m': { tickets: 11, dynamic_percentage: 10.8 }, '6m': { tickets: 5,  dynamic_percentage: 13.1 }, '3m': { tickets: 3, dynamic_percentage: 11.4 }, '1m': { tickets: 1, dynamic_percentage: 6.2  } } }
+      ]},
+      'NOVA': { users: [
+        { name: 'Dave',  role: 'observer', history: { '12m': { tickets:  3, dynamic_percentage:  4.1 }, '6m': { tickets: 2,  dynamic_percentage:  5.8 }, '3m': { tickets: 0, dynamic_percentage: 0.0  }, '1m': { tickets: 0, dynamic_percentage: 0.0  } } },
+        { name: 'Eve',   role: 'lead',     history: { '12m': { tickets: 31, dynamic_percentage: 24.6 }, '6m': { tickets: 16, dynamic_percentage: 28.3 }, '3m': { tickets: 7, dynamic_percentage: 21.5 }, '1m': { tickets: 4, dynamic_percentage: 17.9 } } },
+        { name: 'Bob',   role: 'member',   history: { '12m': { tickets:  7, dynamic_percentage:  7.9 }, '6m': { tickets: 4,  dynamic_percentage:  9.4 }, '3m': { tickets: 2, dynamic_percentage: 7.1  }, '1m': { tickets: 1, dynamic_percentage: 5.3  } } }
+      ]},
+      'DELTA': { users: [
+        { name: 'Carol', role: 'member',   history: { '12m': { tickets: 15, dynamic_percentage: 14.2 }, '6m': { tickets: 7,  dynamic_percentage: 16.8 }, '3m': { tickets: 4, dynamic_percentage: 13.7 }, '1m': { tickets: 2, dynamic_percentage: 11.2 } } },
+        { name: 'Alice', role: 'lead',     history: { '12m': { tickets: 18, dynamic_percentage: 16.9 }, '6m': { tickets: 9,  dynamic_percentage: 19.3 }, '3m': { tickets: 5, dynamic_percentage: 15.8 }, '1m': { tickets: 3, dynamic_percentage: 12.7 } } }
+      ]}
+    }
   },
-  "P4 — Golden": {
-    "members": [
-      { "name": "Yu Narukami",   "arcana": "Fool",      "shadows_defeated": 612, "sp_spent": 1380, "confidant_rank": 10, "party_share_%": 30.0 },
-      { "name": "Yosuke Hanamura","arcana": "Magician", "shadows_defeated": 389, "sp_spent": 670,  "confidant_rank":  9, "party_share_%": 24.0 },
-      { "name": "Chie Satonaka", "arcana": "Chariot",   "shadows_defeated": 445, "sp_spent": 320,  "confidant_rank":  8, "party_share_%": 20.0 },
-      { "name": "Yukiko Amagi",  "arcana": "Priestess", "shadows_defeated": 267, "sp_spent": 1150, "confidant_rank":  8, "party_share_%": 15.0 },
-      { "name": "Kanji Tatsumi", "arcana": "Emperor",   "shadows_defeated": 398, "sp_spent": 280,  "confidant_rank":  7, "party_share_%": 14.0 }
-    ]
-  },
-  "P5 — Royal": {
-    "members": [
-      { "name": "Ren Amamiya",   "arcana": "Fool",      "shadows_defeated": 721, "sp_spent": 1560, "confidant_rank": 10, "party_share_%": 28.0 },
-      { "name": "Ryuji Sakamoto","arcana": "Chariot",   "shadows_defeated": 534, "sp_spent": 410,  "confidant_rank":  9, "party_share_%": 22.0 },
-      { "name": "Ann Takamaki",  "arcana": "Lovers",    "shadows_defeated": 312, "sp_spent": 980,  "confidant_rank":  9, "party_share_%": 20.0 },
-      { "name": "Yusuke Kitagawa","arcana": "Emperor",  "shadows_defeated": 289, "sp_spent": 720,  "confidant_rank":  8, "party_share_%": 16.0 },
-      { "name": "Makoto Niijima","arcana": "Priestess", "shadows_defeated": 356, "sp_spent": 890,  "confidant_rank":  9, "party_share_%": 14.0 },
-      { "name": "Yu Narukami",   "arcana": "Fool",      "shadows_defeated": 498, "sp_spent": 1050, "confidant_rank":  9, "party_share_%": 11.0 },
-      { "name": "Makoto Yuki",   "arcana": "Fool",      "shadows_defeated": 387, "sp_spent": 1180, "confidant_rank":  8, "party_share_%":  9.0 }
-    ]
+  {
+    label: 'SaaS Metrics', sub: 'Complex — nested + many cols',
+    data: {
+      'Growth': { accounts: [
+        { name: 'Acme Corp',      tier: 'Enterprise', mrr: 12400, arr: 148800, seats: 240, active_seats: 198, usage_pct: 82.5, nps: 72, churn_risk: 'low',      csm: 'Leila', health: { '1m': { logins: 3200, tickets:  4 }, '3m': { logins:  9100, tickets: 11 }, '6m': { logins: 17800, tickets: 22 } } },
+        { name: 'Globex',         tier: 'Growth',     mrr:  3200, arr:  38400, seats:  80, active_seats:  71, usage_pct: 88.8, nps: 61, churn_risk: 'low',      csm: 'Marco', health: { '1m': { logins:  910, tickets:  2 }, '3m': { logins:  2700, tickets:  5 }, '6m': { logins:  5200, tickets:  9 } } },
+        { name: 'Initech',        tier: 'Startup',    mrr:   890, arr:  10680, seats:  20, active_seats:  11, usage_pct: 55.0, nps: 42, churn_risk: 'high',     csm: 'Leila', health: { '1m': { logins:  120, tickets:  7 }, '3m': { logins:   410, tickets: 18 }, '6m': { logins:   780, tickets: 31 } } }
+      ]},
+      'Expansion': { accounts: [
+        { name: 'Hooli',          tier: 'Enterprise', mrr: 28600, arr: 343200, seats: 500, active_seats: 487, usage_pct: 97.4, nps: 81, churn_risk: 'low',      csm: 'Priya', health: { '1m': { logins: 8100, tickets:  6 }, '3m': { logins: 23400, tickets: 14 }, '6m': { logins: 45900, tickets: 27 } } },
+        { name: 'Umbrella Co',    tier: 'Growth',     mrr:  5600, arr:  67200, seats: 120, active_seats:  96, usage_pct: 80.0, nps: 55, churn_risk: 'medium',   csm: 'Marco', health: { '1m': { logins: 1400, tickets:  9 }, '3m': { logins:  4100, tickets: 21 }, '6m': { logins:  7800, tickets: 38 } } },
+        { name: 'Dunder Mifflin', tier: 'Startup',    mrr:  1200, arr:  14400, seats:  30, active_seats:  27, usage_pct: 90.0, nps: 68, churn_risk: 'low',      csm: 'Priya', health: { '1m': { logins:  390, tickets:  1 }, '3m': { logins:  1100, tickets:  3 }, '6m': { logins:  2100, tickets:  6 } } }
+      ]},
+      'At Risk': { accounts: [
+        { name: 'Vandelay',       tier: 'Growth',     mrr:  2900, arr:  34800, seats:  60, active_seats:  22, usage_pct: 36.7, nps: 28, churn_risk: 'critical', csm: 'Leila', health: { '1m': { logins:  180, tickets: 14 }, '3m': { logins:   540, tickets: 38 }, '6m': { logins:   990, tickets: 61 } } },
+        { name: 'Massive Dyn',    tier: 'Enterprise', mrr:  8100, arr:  97200, seats: 180, active_seats:  91, usage_pct: 50.6, nps: 33, churn_risk: 'high',     csm: 'Marco', health: { '1m': { logins:  820, tickets: 19 }, '3m': { logins:  2300, tickets: 47 }, '6m': { logins:  4100, tickets: 88 } } }
+      ]}
+    }
   }
-};
+];
 
 // ─────────────────────────────────────────────────────────────
 // State
@@ -733,10 +994,78 @@ let _structure        = null; // { mode, groups, columns }
 let _pivotConfig      = null; // { identifierField, pivotField, periodKeys, metrics } | null
 let _pivotActive      = false;
 let _nestedModalState = null; // { matchingRows, isObjOfObjs, sortedPeriods, metricList }
+let _sortCol          = null; // column name, or null for natural order
+let _sortDir          = 'asc'; // 'asc' | 'desc'
+let _sortClicks       = 0;    // tracks 3-click cycle: asc → desc → off
+let _timelineMode     = false; // true = show timeline chart instead of pivot table
+let _periodReversed   = false; // true = X axis runs high → low
+let _hiddenCols       = new Set(); // column names hidden from the table
+let _heatMapEnabled   = false; // true = color-tint numeric cells by value range
+let _colFilters       = {};   // { colName: Set<string> } — active value filters per column
+let _sparklinesEnabled = false; // true = show inline mini bar in numeric cells
+let _regexSearch       = false; // true = use regex in search box
 
 // ─────────────────────────────────────────────────────────────
 // Utilities
 // ─────────────────────────────────────────────────────────────
+const _els = {};
+function $(id) { return _els[id] || (_els[id] = document.getElementById(id)); }
+
+// ─────────────────────────────────────────────────────────────
+// URL / Session state
+// ─────────────────────────────────────────────────────────────
+let _pendingState = null; // view state to apply after next loadJSON
+
+function pushViewState() {
+  const state = {
+    q: $('search-input').value || undefined,
+    s: _sortCol || undefined,
+    d: _sortDir !== 'asc' ? _sortDir : undefined,
+    h: _hiddenCols.size ? [..._hiddenCols] : undefined,
+  };
+  const hasState = state.q || state.s || state.h;
+  try {
+    const hash = hasState ? '#v=' + btoa(encodeURIComponent(JSON.stringify(state))) : location.pathname + location.search;
+    history.replaceState(null, '', hasState ? hash : location.pathname + location.search);
+  } catch (e) { /* ignore */ }
+}
+
+function parseViewStateHash() {
+  const hash = location.hash;
+  if (!hash.startsWith('#v=')) return null;
+  try { return JSON.parse(decodeURIComponent(atob(hash.slice(3)))); } catch (e) { return null; }
+}
+
+function applyViewState(state) {
+  if (!state || !_structure) return;
+  if (state.s) {
+    _sortCol = state.s; _sortDir = state.d || 'asc'; _sortClicks = 0;
+    renderTable(_structure);
+    applyColFilters();
+    if (_heatMapEnabled) applyHeatMap();
+  }
+  if (state.h && state.h.length) {
+    state.h.forEach(c => _hiddenCols.add(c));
+    renderTable(_structure);
+    buildFilterBar();
+    updateFilterBadge();
+  }
+  if (state.q) {
+    $('search-input').value = state.q;
+    applyFilter(state.q);
+  }
+}
+
+let _toastTimer = null;
+function showToast(msg) {
+  let el = document.getElementById('app-toast');
+  if (!el) { el = document.createElement('div'); el.id = 'app-toast'; el.className = 'toast'; document.body.appendChild(el); }
+  el.textContent = msg;
+  el.classList.add('visible');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('visible'), 2000);
+}
+
 function escHtml(str) {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -749,6 +1078,31 @@ function escHtml(str) {
 function fmt(n) {
   if (Number.isInteger(n)) return n.toLocaleString();
   return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function resetViewerState() {
+  _sortCol = null; _sortDir = 'asc'; _sortClicks = 0;
+  _hiddenCols.clear(); _heatMapEnabled = false;
+  _colFilters = {}; _sparklinesEnabled = false;
+  _pivotActive = false; _timelineMode = false;
+  _periodReversed = false; _pivotConfig = null;
+  $('btn-heat').classList.remove('active');
+  $('btn-sparklines').classList.remove('active');
+  $('btn-chart-toggle').classList.remove('active');
+  $('btn-period-order').classList.add('hidden-el');
+  $('pivot-toolbar').classList.add('hidden-el');
+  $('pivot-table').classList.add('hidden-el');
+  $('timeline-area').classList.add('hidden-el');
+  $('data-table').classList.remove('hidden-el');
+  $('search-bar').style.display = '';
+}
+
+function rerender() {
+  if (!_structure) return;
+  renderTable(_structure);
+  applyFilter($('search-input').value);
+  applyColFilters();
+  if (_heatMapEnabled) applyHeatMap();
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -929,10 +1283,10 @@ function renderPivotToolbar(pivotConfig) {
   }
   const users = [...userSet].sort((a, b) => a.localeCompare(b));
 
-  const userSel = document.getElementById('pivot-user-select');
+  const userSel = $('pivot-user-select');
   userSel.innerHTML = users.map(u => `<option value="${escHtml(u)}">${escHtml(u)}</option>`).join('');
 
-  const metricSel = document.getElementById('pivot-metric-select');
+  const metricSel = $('pivot-metric-select');
   metricSel.innerHTML = metrics.map(m => `<option value="${escHtml(m)}">${escHtml(m)}</option>`).join('');
 }
 
@@ -956,7 +1310,7 @@ function renderPivotTable(structure, pivotConfig, user, metric) {
   }
 
   // Thead
-  const thead = document.getElementById('pivot-table-head');
+  const thead = $('pivot-table-head');
   thead.innerHTML = '';
   const hrow = document.createElement('tr');
   hrow.innerHTML = `<th>Project</th>` +
@@ -965,7 +1319,7 @@ function renderPivotTable(structure, pivotConfig, user, metric) {
   thead.appendChild(hrow);
 
   // Tbody + totals
-  const tbody = document.getElementById('pivot-table-body');
+  const tbody = $('pivot-table-body');
   tbody.innerHTML = '';
 
   const colTotals = new Array(periodKeys.length).fill(0);
@@ -1003,7 +1357,7 @@ function renderPivotTable(structure, pivotConfig, user, metric) {
 function renderPivotSidebar(pivotData, pivotConfig) {
   const { pivotRows, colTotals, grandTotal } = pivotData;
   const { periodKeys } = pivotConfig;
-  const sidebar = document.getElementById('stats-sidebar');
+  const sidebar = $('stats-sidebar');
 
   let html = `<div>
     <div class="stats-section-title">Pivot Summary</div>
@@ -1031,32 +1385,199 @@ function renderPivotSidebar(pivotData, pivotConfig) {
   sidebar.innerHTML = html;
 }
 
+// ─────────────────────────────────────────────────────────────
+// Timeline Chart
+// ─────────────────────────────────────────────────────────────
+const CHART_COLORS = ['#818cf8','#34d399','#fbbf24','#f472b6','#2dd4bf','#fb923c','#a78bfa','#60a5fa','#f87171','#4ade80'];
+
+function renderTimelineChart(structure, pivotConfig, user, metric) {
+  const area = $('timeline-area');
+  const sidebar = $('stats-sidebar');
+  const { groups } = structure;
+  const { identifierField, pivotField, periodKeys: rawPeriodKeys } = pivotConfig;
+  const periodKeys = _periodReversed ? [...rawPeriodKeys].reverse() : rawPeriodKeys;
+
+  // Update button label to reflect current order
+  const orderLabel = $('btn-period-order-label');
+  if (orderLabel) {
+    orderLabel.textContent = `${periodKeys[0]} → ${periodKeys[periodKeys.length - 1]}`;
+  }
+
+  // Collect data: one series per group where user appears
+  const series = [];
+  for (const group of groups) {
+    const matchRow = group.rows.find(r => String(r[identifierField] ?? '') === user);
+    if (!matchRow) continue;
+    const histObj = matchRow[pivotField] || {};
+    const vals = periodKeys.map(p => {
+      const v = (histObj[p] || {})[metric];
+      return (v !== undefined && v !== null && !isNaN(Number(v))) ? Number(v) : null;
+    });
+    if (vals.every(v => v === null)) continue;
+    series.push({ name: group.name, vals });
+  }
+
+  if (series.length === 0) {
+    area.innerHTML = `<div style="color:var(--text-muted);padding:32px;text-align:center;">No data found for <strong style="color:var(--text-primary)">${escHtml(user)}</strong> in any project.</div>`;
+    sidebar.innerHTML = '';
+    return;
+  }
+
+  // Chart geometry
+  const W = 700, H = 280;
+  const PAD = { top: 20, right: 24, bottom: 40, left: 52 };
+  const chartW = W - PAD.left - PAD.right;
+  const chartH = H - PAD.top - PAD.bottom;
+  const xStep  = periodKeys.length > 1 ? chartW / (periodKeys.length - 1) : chartW / 2;
+
+  // Y scale
+  const allVals = series.flatMap(s => s.vals).filter(v => v !== null);
+  const yMin = 0;
+  const yMax = Math.max(...allVals) * 1.15 || 10;
+
+  function xPos(i) {
+    return PAD.left + (periodKeys.length > 1 ? i * xStep : chartW / 2);
+  }
+  function yPos(v) {
+    return PAD.top + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
+  }
+
+  // Y grid lines (4 lines)
+  let gridLines = '';
+  let yLabels   = '';
+  for (let t = 0; t <= 4; t++) {
+    const val = yMin + (yMax - yMin) * (t / 4);
+    const y   = yPos(val);
+    gridLines += `<line class="timeline-grid" x1="${PAD.left}" y1="${y}" x2="${W - PAD.right}" y2="${y}"/>`;
+    yLabels   += `<text class="timeline-axis-label" x="${PAD.left - 8}" y="${y + 4}" text-anchor="end">${fmt(val)}</text>`;
+  }
+
+  // X axis labels
+  let xLabels = '';
+  periodKeys.forEach((p, i) => {
+    xLabels += `<text class="timeline-axis-label" x="${xPos(i)}" y="${H - PAD.bottom + 18}" text-anchor="middle">${escHtml(p)}</text>`;
+  });
+
+  // Lines + dots per series
+  let linesHtml = '';
+  let dotsHtml  = '';
+  series.forEach((s, si) => {
+    const color = CHART_COLORS[si % CHART_COLORS.length];
+    // Build path (skip nulls with M/L segments)
+    let d = '';
+    let prev = null;
+    s.vals.forEach((v, i) => {
+      if (v === null) { prev = null; return; }
+      const x = xPos(i), y = yPos(v);
+      d += prev === null ? `M ${x} ${y}` : ` L ${x} ${y}`;
+      prev = { x, y };
+    });
+    if (d) linesHtml += `<path class="timeline-line" d="${d}" stroke="${color}"/>`;
+    s.vals.forEach((v, i) => {
+      if (v === null) return;
+      const x = xPos(i), y = yPos(v);
+      dotsHtml += `<circle class="timeline-dot" cx="${x}" cy="${y}" fill="${color}"
+        data-series="${escHtml(s.name)}" data-period="${escHtml(periodKeys[i])}" data-value="${v}"/>`;
+    });
+  });
+
+  // Legend
+  const legendHtml = series.map((s, si) => {
+    const color = CHART_COLORS[si % CHART_COLORS.length];
+    return `<div class="timeline-legend-item">
+      <div class="timeline-legend-dot" style="background:${color}"></div>
+      <span>${escHtml(s.name)}</span>
+    </div>`;
+  }).join('');
+
+  area.innerHTML = `
+    <div class="timeline-chart-wrap">
+      <div class="timeline-chart-title">${escHtml(user)} · ${escHtml(metric)} over time</div>
+      <svg class="timeline-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+        ${gridLines}${yLabels}${xLabels}${linesHtml}${dotsHtml}
+      </svg>
+      <div class="timeline-legend">${legendHtml}</div>
+    </div>`;
+
+  // Sidebar: per-period totals across all series
+  const colTotals = periodKeys.map((_, i) => {
+    const nums = series.map(s => s.vals[i]).filter(v => v !== null);
+    return nums.length ? nums.reduce((a, b) => a + b, 0) : null;
+  });
+  const grandTotal = colTotals.filter(v => v !== null).reduce((a, b) => a + b, 0);
+
+  let sbHtml = `<div class="sidebar-section">
+    <div class="sidebar-section-title">Timeline Summary</div>
+    <div class="stats-row"><span class="stats-label">Projects tracked</span><span class="stats-value">${series.length}</span></div>
+    <div class="stats-row"><span class="stats-label">Grand total</span><span class="stats-value">${fmt(grandTotal)}</span></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">By Period</div>
+    ${periodKeys.map((p, i) => `<div class="stats-row"><span class="stats-label">${escHtml(p)}</span><span class="stats-value">${colTotals[i] !== null ? fmt(colTotals[i]) : '—'}</span></div>`).join('')}
+  </div>`;
+  sidebar.innerHTML = sbHtml;
+}
+
 function activatePivotMode() {
   _pivotActive = true;
-  document.getElementById('btn-pivot').classList.add('active');
-  document.getElementById('pivot-toolbar').classList.remove('hidden-el');
-  document.getElementById('search-bar').style.display = 'none';
-  document.getElementById('data-table').classList.add('hidden-el');
-  document.getElementById('pivot-table').classList.remove('hidden-el');
+  _timelineMode = false;
+  $('btn-pivot').classList.add('active');
+  $('pivot-toolbar').classList.remove('hidden-el');
+  $('search-bar').style.display = 'none';
+  $('data-table').classList.add('hidden-el');
+  $('pivot-table').classList.remove('hidden-el');
+  $('timeline-area').classList.add('hidden-el');
+  $('btn-chart-toggle').classList.remove('active');
   refreshPivot();
 }
 
 function deactivatePivotMode() {
   _pivotActive = false;
-  document.getElementById('btn-pivot').classList.remove('active');
-  document.getElementById('pivot-toolbar').classList.add('hidden-el');
-  document.getElementById('search-bar').style.display = '';
-  document.getElementById('data-table').classList.remove('hidden-el');
-  document.getElementById('pivot-table').classList.add('hidden-el');
-  applyFilter(document.getElementById('search-input').value);
+  _timelineMode = false;
+  _periodReversed = false;
+  $('btn-pivot').classList.remove('active');
+  $('pivot-toolbar').classList.add('hidden-el');
+  $('search-bar').style.display = '';
+  $('data-table').classList.remove('hidden-el');
+  $('pivot-table').classList.add('hidden-el');
+  $('timeline-area').classList.add('hidden-el');
+  $('btn-chart-toggle').classList.remove('active');
+  $('btn-period-order').classList.add('hidden-el');
+  applyFilter($('search-input').value);
 }
 
 function refreshPivot() {
   if (!_pivotActive || !_pivotConfig) return;
-  const user   = document.getElementById('pivot-user-select').value;
-  const metric = document.getElementById('pivot-metric-select').value;
-  const pivotData = renderPivotTable(_structure, _pivotConfig, user, metric);
-  renderPivotSidebar(pivotData, _pivotConfig);
+  const user   = $('pivot-user-select').value;
+  const metric = $('pivot-metric-select').value;
+  if (_timelineMode) {
+    $('pivot-table').classList.add('hidden-el');
+    $('timeline-area').classList.remove('hidden-el');
+    renderTimelineChart(_structure, _pivotConfig, user, metric);
+  } else {
+    $('timeline-area').classList.add('hidden-el');
+    $('pivot-table').classList.remove('hidden-el');
+    const pivotData = renderPivotTable(_structure, _pivotConfig, user, metric);
+    renderPivotSidebar(pivotData, _pivotConfig);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Sorting
+// ─────────────────────────────────────────────────────────────
+function getSortedRows(rows) {
+  if (!_sortCol) return rows;
+  return [...rows].sort((a, b) => {
+    const av = a[_sortCol] ?? '';
+    const bv = b[_sortCol] ?? '';
+    let cmp;
+    if (typeof av === 'number' && typeof bv === 'number') {
+      cmp = av - bv;
+    } else {
+      cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
+    }
+    return _sortDir === 'asc' ? cmp : -cmp;
+  });
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1066,21 +1587,50 @@ function renderTable(structure) {
   const { groups, columns, mode } = structure;
   const isGrouped = mode === 'grouped';
 
-  // thead
-  const thead = document.getElementById('table-head');
+  // thead — with sort indicators
+  const thead = $('table-head');
   thead.innerHTML = '';
+  const visibleCols = columns.filter(c => !_hiddenCols.has(c.name));
+
+  // Pre-compute column ranges for sparklines
+  const colRanges = {};
+  if (_sparklinesEnabled) {
+    for (const col of visibleCols.filter(c => c.type === 'number')) {
+      const vals = groups.flatMap(g => g.rows).map(r => r[col.name]).filter(v => typeof v === 'number');
+      colRanges[col.name] = { min: Math.min(...vals), max: Math.max(...vals) };
+    }
+  }
+
   const hrow = document.createElement('tr');
-  for (const col of columns) {
+  for (const col of visibleCols) {
     const th = document.createElement('th');
-    th.textContent = col.name;
     if (col.type === 'number') th.classList.add('col-num');
+    if (col.type !== 'nested') {
+      th.classList.add('sortable');
+      const isActive = _sortCol === col.name;
+      th.innerHTML = `${escHtml(col.name)}<i class="sort-icon">${isActive ? (_sortDir === 'asc' ? '▲' : '▼') : '⇅'}</i>`;
+      if (isActive) th.classList.add(_sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+      th.addEventListener('click', () => {
+        if (_sortCol === col.name) {
+          _sortClicks++;
+          if (_sortClicks === 1) { _sortDir = 'desc'; }
+          else { _sortCol = null; _sortClicks = 0; }
+        } else {
+          _sortCol = col.name; _sortDir = 'asc'; _sortClicks = 0;
+        }
+        rerender();
+        pushViewState();
+      });
+    } else {
+      th.textContent = col.name;
+    }
     hrow.appendChild(th);
   }
   thead.appendChild(hrow);
 
   // tbody
-  const tbody = document.getElementById('table-body');
-  tbody.innerHTML = '';
+  const tbody = $('table-body');
+  tbody.innerHTML = ''; // clears keyboard-focused state naturally
   let rowIdx = 0;
 
   for (const group of groups) {
@@ -1092,7 +1642,7 @@ function renderTable(structure) {
       groupRow.dataset.originalIndex = rowIdx++;
 
       const td = document.createElement('td');
-      td.colSpan = columns.length;
+      td.colSpan = visibleCols.length;
       td.innerHTML =
         `<div class="group-name">` +
         `<svg class="group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>` +
@@ -1118,14 +1668,15 @@ function renderTable(structure) {
       });
     }
 
-    // Data rows
-    for (const row of group.rows) {
+    // Data rows (sorted copy — never mutates original)
+    for (const row of getSortedRows(group.rows)) {
       const tr = document.createElement('tr');
       tr.className = 'row-data';
       tr.dataset.originalIndex = rowIdx++;
+      tr._rowData = row; // for CSV export + copy-row
       if (isGrouped && group.name !== null) tr.dataset.group = group.name;
 
-      for (const col of columns) {
+      for (const col of visibleCols) {
         const td = document.createElement('td');
         const val = row[col.name];
         if (col.type === 'nested' && val && typeof val === 'object') {
@@ -1142,9 +1693,23 @@ function renderTable(structure) {
           if (col.type === 'number') td.classList.add('col-num');
           const raw = (val !== undefined && val !== null) ? String(val) : '';
           td.dataset.raw = raw;
-          td.textContent = raw;
+          if (col.type === 'number' && _sparklinesEnabled && colRanges[col.name] && raw !== '') {
+            const { min, max } = colRanges[col.name];
+            const t = max > min ? (Number(val) - min) / (max - min) : 1;
+            const pct = Math.round(t * 100);
+            td.innerHTML = `<div class="spark-wrap"><span>${escHtml(raw)}</span><div class="spark-track"><div class="spark-fill" style="width:${pct}%"></div></div></div>`;
+          } else {
+            td.textContent = raw;
+          }
         }
         tr.appendChild(td);
+      }
+      // Copy-row button in last td
+      if (tr.lastChild) {
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-row-btn';
+        copyBtn.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+        tr.lastChild.appendChild(copyBtn);
       }
       tbody.appendChild(tr);
     }
@@ -1170,12 +1735,41 @@ function highlightText(text, term) {
   return result;
 }
 
+function highlightRegex(text, re) {
+  if (!text) return '';
+  let result = '', lastIndex = 0, m;
+  re.lastIndex = 0;
+  while ((m = re.exec(text)) !== null) {
+    result += escHtml(text.slice(lastIndex, m.index));
+    result += `<mark>${escHtml(m[0])}</mark>`;
+    lastIndex = m.index + m[0].length;
+    if (m[0].length === 0) re.lastIndex++; // prevent infinite loop on zero-width match
+  }
+  return result + escHtml(text.slice(lastIndex));
+}
+
 // ─────────────────────────────────────────────────────────────
 // Filter
 // ─────────────────────────────────────────────────────────────
 function applyFilter(term) {
-  const tbody = document.getElementById('table-body');
-  const lower = term.toLowerCase().trim();
+  const tbody = $('table-body');
+  const raw   = term.trim();
+  const lower = raw.toLowerCase();
+  const searchEl = $('search-input');
+
+  // Build regex (regex mode) or use plain string
+  let regex = null;
+  if (_regexSearch && raw) {
+    try {
+      regex = new RegExp(raw, 'gi');
+      searchEl.classList.remove('regex-invalid');
+    } catch (e) {
+      searchEl.classList.add('regex-invalid');
+      return; // invalid pattern — don't filter
+    }
+  } else {
+    searchEl.classList.remove('regex-invalid');
+  }
 
   const groupMatchCount = {}; // groupKey → count
   let totalMatches = 0;
@@ -1186,10 +1780,16 @@ function applyFilter(term) {
     if (tr.dataset.collapsedByGroup) { tr.dataset.matchResult = '0'; continue; }
 
     const tds = tr.querySelectorAll('td');
-    let matches = !lower;
-    if (lower) {
+    let matches = !raw;
+    if (raw) {
       for (const td of tds) {
-        if (td.dataset.raw.toLowerCase().includes(lower)) { matches = true; break; }
+        const cellRaw = td.dataset.raw;
+        if (_regexSearch && regex) {
+          regex.lastIndex = 0;
+          if (regex.test(cellRaw)) { matches = true; break; }
+        } else {
+          if (cellRaw.toLowerCase().includes(lower)) { matches = true; break; }
+        }
       }
     }
 
@@ -1198,12 +1798,18 @@ function applyFilter(term) {
     if (matches) { groupMatchCount[groupKey]++; totalMatches++; }
 
     tr.dataset.matchResult = matches ? '1' : '0';
-    tr.classList.toggle('hidden', !matches && !!lower);
+    tr.classList.toggle('hidden', !matches && !!raw);
     tr.classList.remove('dimmed');
 
     for (const td of tds) {
       if (td.dataset.nestedCol) continue; // preserve nested badges
-      td.innerHTML = (lower && matches) ? highlightText(td.dataset.raw, lower) : escHtml(td.dataset.raw);
+      if (raw && matches) {
+        td.innerHTML = _regexSearch && regex
+          ? highlightRegex(td.dataset.raw, new RegExp(raw, 'gi'))
+          : highlightText(td.dataset.raw, lower);
+      } else {
+        td.innerHTML = escHtml(td.dataset.raw);
+      }
     }
   }
 
@@ -1227,17 +1833,23 @@ function applyFilter(term) {
       return aHas - bHas;
     });
 
+    const frag = document.createDocumentFragment();
     for (const { groupRow, rows } of sections) {
-      if (groupRow) tbody.appendChild(groupRow);
+      if (groupRow) frag.appendChild(groupRow);
       const matching    = rows.filter(r => r.dataset.matchResult === '1');
       const nonMatching = rows.filter(r => r.dataset.matchResult !== '1');
-      for (const r of [...matching, ...nonMatching]) tbody.appendChild(r);
+      for (const r of [...matching, ...nonMatching]) frag.appendChild(r);
     }
+    tbody.innerHTML = '';
+    tbody.appendChild(frag);
   } else {
     // Restore original insertion order
     const allRows = [...tbody.querySelectorAll('tr')];
     allRows.sort((a, b) => +a.dataset.originalIndex - +b.dataset.originalIndex);
-    for (const r of allRows) tbody.appendChild(r);
+    const frag = document.createDocumentFragment();
+    for (const r of allRows) frag.appendChild(r);
+    tbody.innerHTML = '';
+    tbody.appendChild(frag);
   }
 
   // Step 3: update group header badges and dim groups with zero matches
@@ -1252,7 +1864,7 @@ function applyFilter(term) {
   }
 
   // Match count chip
-  const matchCountEl = document.getElementById('match-count');
+  const matchCountEl = $('match-count');
   if (!lower) {
     matchCountEl.textContent = '';
     matchCountEl.className = 'match-count';
@@ -1268,7 +1880,7 @@ function applyFilter(term) {
 // Stats Sidebar
 // ─────────────────────────────────────────────────────────────
 function renderStats(lower, groupMatchCount) {
-  const sidebar = document.getElementById('stats-sidebar');
+  const sidebar = $('stats-sidebar');
   const { groups, columns, mode } = _structure;
 
   // Collect matched rows
@@ -1366,7 +1978,7 @@ function renderStats(lower, groupMatchCount) {
 // Load & View Transition
 // ─────────────────────────────────────────────────────────────
 function loadJSON(text) {
-  const errEl = document.getElementById('error-msg');
+  const errEl = $('error-msg');
   errEl.classList.remove('visible');
 
   let parsed;
@@ -1386,17 +1998,11 @@ function loadJSON(text) {
     return;
   }
 
-  // Reset pivot state
-  _pivotActive = false;
-  _pivotConfig = null;
-  document.getElementById('pivot-toolbar').classList.add('hidden-el');
-  document.getElementById('data-table').classList.remove('hidden-el');
-  document.getElementById('pivot-table').classList.add('hidden-el');
-  document.getElementById('search-bar').style.display = '';
+  resetViewerState();
 
   // Detect pivot eligibility
   _pivotConfig = detectPivotConfig(parsed);
-  const btnPivot = document.getElementById('btn-pivot');
+  const btnPivot = $('btn-pivot');
   if (_pivotConfig) {
     btnPivot.classList.remove('hidden-el');
     renderPivotToolbar(_pivotConfig);
@@ -1405,29 +2011,47 @@ function loadJSON(text) {
   }
 
   renderTable(_structure);
-  document.getElementById('search-input').value = '';
+  buildFilterBar();
+  updateFilterBadge();
+  $('search-input').value = '';
   applyFilter('');
 
   // Switch views
-  document.getElementById('view-input').style.display = 'none';
-  document.getElementById('view-viewer').classList.add('active');
-  document.getElementById('btn-new-json').classList.remove('hidden-el');
+  $('view-input').style.display = 'none';
+  $('view-viewer').classList.add('active');
+  $('btn-new-json').classList.remove('hidden-el');
+  $('btn-collapse-all').classList.remove('hidden-el');
+  $('btn-export-csv').classList.remove('hidden-el');
+  $('btn-sparklines').classList.remove('hidden-el');
+  $('btn-heat').classList.remove('hidden-el');
+  $('btn-columns').classList.remove('hidden-el');
+
+  // Apply pending URL state then save JSON to session
+  if (_pendingState) { applyViewState(_pendingState); _pendingState = null; }
+  try { sessionStorage.setItem('viewer-session-json', text); } catch (e) {}
 }
 
 // ─────────────────────────────────────────────────────────────
 // Event Handlers
 // ─────────────────────────────────────────────────────────────
 
-// Example dataset button
-document.getElementById('btn-example').addEventListener('click', () => {
-  loadJSON(JSON.stringify(DEMO_DATA));
-});
+// Build example buttons
+(function() {
+  const container = $('example-buttons');
+  DEMOS.forEach((demo, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-example';
+    btn.innerHTML = `${escHtml(demo.label)}<span class="btn-example-sub">${escHtml(demo.sub)}</span>`;
+    btn.addEventListener('click', () => loadJSON(JSON.stringify(demo.data)));
+    container.appendChild(btn);
+  });
+})();
 
 // Load button
-document.getElementById('btn-load').addEventListener('click', () => {
-  const text = document.getElementById('json-input').value.trim();
+$('btn-load').addEventListener('click', () => {
+  const text = $('json-input').value.trim();
   if (!text) {
-    const errEl = document.getElementById('error-msg');
+    const errEl = $('error-msg');
     errEl.textContent = 'Please paste JSON or upload a file first.';
     errEl.classList.add('visible');
     return;
@@ -1436,18 +2060,25 @@ document.getElementById('btn-load').addEventListener('click', () => {
 });
 
 // Load new JSON button
-document.getElementById('btn-new-json').addEventListener('click', () => {
-  _pivotActive = false;
-  document.getElementById('btn-pivot').classList.remove('active');
-  document.getElementById('view-viewer').classList.remove('active');
-  document.getElementById('view-input').style.display = '';
-  document.getElementById('btn-new-json').classList.add('hidden-el');
-  document.getElementById('json-input').value = '';
-  document.getElementById('error-msg').classList.remove('visible');
+$('btn-new-json').addEventListener('click', () => {
+  resetViewerState();
+  $('view-viewer').classList.remove('active');
+  $('view-input').style.display = '';
+  $('btn-new-json').classList.add('hidden-el');
+  $('btn-collapse-all').classList.add('hidden-el');
+  $('btn-export-csv').classList.add('hidden-el');
+  $('btn-sparklines').classList.add('hidden-el');
+  $('btn-heat').classList.add('hidden-el');
+  $('btn-columns').classList.add('hidden-el');
+  $('cols-dropdown').classList.add('hidden-el');
+  $('btn-pivot').classList.remove('active');
+  $('filter-bar').classList.add('hidden-el');
+  $('json-input').value = '';
+  $('error-msg').classList.remove('visible');
 });
 
 // File picker
-document.getElementById('file-input').addEventListener('change', (e) => {
+$('file-input').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -1457,7 +2088,7 @@ document.getElementById('file-input').addEventListener('change', (e) => {
 });
 
 // Drag-and-drop onto drop zone
-const dropZone = document.getElementById('drop-zone');
+const dropZone = $('drop-zone');
 dropZone.addEventListener('dragover', (e) => {
   e.preventDefault();
   dropZone.classList.add('drag-over');
@@ -1479,20 +2110,313 @@ dropZone.addEventListener('drop', (e) => {
 
 // Search (debounced 150ms)
 let _searchTimer = null;
-document.getElementById('search-input').addEventListener('input', (e) => {
+$('search-input').addEventListener('input', (e) => {
   clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(() => applyFilter(e.target.value), 150);
+  _searchTimer = setTimeout(() => { applyFilter(e.target.value); pushViewState(); }, 150);
+});
+
+$('btn-regex').addEventListener('click', () => {
+  _regexSearch = !_regexSearch;
+  const btn = $('btn-regex');
+  const input = $('search-input');
+  btn.classList.toggle('active', _regexSearch);
+  input.classList.toggle('regex-mode', _regexSearch);
+  input.placeholder = _regexSearch ? 'Search with regex…' : 'Search across all records…';
+  applyFilter(input.value);
+});
+
+// ─────────────────────────────────────────────────────────────
+// Collapse All / Expand All
+// ─────────────────────────────────────────────────────────────
+let _allCollapsed = false;
+$('btn-collapse-all').addEventListener('click', () => {
+  _allCollapsed = !_allCollapsed;
+  $('btn-collapse-all').textContent = _allCollapsed ? 'Expand All' : 'Collapse All';
+  const tbody = $('table-body');
+  for (const groupRow of tbody.querySelectorAll('.row-group')) {
+    const isCollapsed = groupRow.classList.contains('collapsed');
+    if (_allCollapsed && !isCollapsed) groupRow.click();
+    if (!_allCollapsed && isCollapsed)  groupRow.click();
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// CSV Export
+// ─────────────────────────────────────────────────────────────
+function csvCell(val) {
+  const s = (val === null || val === undefined) ? '' :
+            (typeof val === 'object' ? JSON.stringify(val) : String(val));
+  return s.includes(',') || s.includes('"') || s.includes('\n')
+    ? '"' + s.replace(/"/g, '""') + '"'
+    : s;
+}
+$('btn-export-csv').addEventListener('click', () => {
+  const { groups, columns, mode } = _structure;
+  const visibleCols = columns.filter(c => !_hiddenCols.has(c.name));
+  const isGrouped = mode === 'grouped';
+  const tbody = $('table-body');
+
+  const headers = (isGrouped ? ['Group'] : []).concat(visibleCols.map(c => c.name));
+  const rows = [headers.join(',')];
+
+  for (const group of groups) {
+    for (const row of getSortedRows(group.rows)) {
+      // Check if this row's tr is visible in the DOM
+      const tr = [...tbody.querySelectorAll('.row-data')].find(
+        t => t.dataset.group === (group.name || '') && t._rowData === row
+      );
+      if (tr && tr.classList.contains('hidden')) continue;
+      const cells = (isGrouped ? [csvCell(group.name)] : [])
+        .concat(visibleCols.map(c => csvCell(row[c.name])));
+      rows.push(cells.join(','));
+    }
+  }
+
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'export.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ─────────────────────────────────────────────────────────────
+// Column visibility
+// ─────────────────────────────────────────────────────────────
+function buildColsDropdown() {
+  const dropdown = $('cols-dropdown');
+  const { columns } = _structure;
+  dropdown.innerHTML = '';
+  for (const col of columns) {
+    const item = document.createElement('label');
+    item.className = 'cols-dropdown-item' + (_hiddenCols.has(col.name) ? ' hidden-col' : '');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = !_hiddenCols.has(col.name);
+    cb.addEventListener('change', () => {
+      if (cb.checked) _hiddenCols.delete(col.name);
+      else _hiddenCols.add(col.name);
+      item.classList.toggle('hidden-col', !cb.checked);
+      rerender();
+    });
+    item.appendChild(cb);
+    item.appendChild(document.createTextNode(col.name));
+    dropdown.appendChild(item);
+  }
+}
+
+$('btn-columns').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const dropdown = $('cols-dropdown');
+  if (dropdown.classList.contains('hidden-el')) {
+    buildColsDropdown();
+    dropdown.classList.remove('hidden-el');
+  } else {
+    dropdown.classList.add('hidden-el');
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.cols-dropdown-wrap')) {
+    $('cols-dropdown').classList.add('hidden-el');
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// Heat map
+// ─────────────────────────────────────────────────────────────
+function applyHeatMap() {
+  if (!_structure) return;
+  const { columns, groups } = _structure;
+  const numCols = columns.filter(c => c.type === 'number' && !_hiddenCols.has(c.name));
+  const visibleCols = columns.filter(c => !_hiddenCols.has(c.name));
+
+  // Compute min/max per numeric column from all rows
+  const colStats = {};
+  for (const col of numCols) {
+    const vals = groups.flatMap(g => g.rows).map(r => r[col.name]).filter(v => typeof v === 'number');
+    colStats[col.name] = { min: Math.min(...vals), max: Math.max(...vals) };
+  }
+
+  const tbody = $('table-body');
+  for (const tr of tbody.querySelectorAll('.row-data')) {
+    const tds = tr.querySelectorAll('td');
+    visibleCols.forEach((col, i) => {
+      if (col.type !== 'number') return;
+      const td = tds[i];
+      if (!td) return;
+      const raw = parseFloat(td.dataset.raw);
+      const { min, max } = colStats[col.name] || {};
+      if (max === min || isNaN(raw)) { td.classList.remove('heat-cell'); return; }
+      const t = (raw - min) / (max - min);
+      // Cool (blue-ish) → warm (red-ish)
+      const r = Math.round(t * 220 + (1 - t) * 30);
+      const g = Math.round((1 - Math.abs(t - 0.5) * 2) * 80);
+      const b = Math.round((1 - t) * 200 + t * 40);
+      td.classList.add('heat-cell');
+      td.style.backgroundColor = `rgba(${r},${g},${b},${0.12 + t * 0.28})`;
+    });
+  }
+}
+
+function clearHeatMap() {
+  for (const td of document.querySelectorAll('td.heat-cell')) {
+    td.classList.remove('heat-cell');
+    td.style.backgroundColor = '';
+  }
+}
+
+$('btn-sparklines').addEventListener('click', () => {
+  _sparklinesEnabled = !_sparklinesEnabled;
+  $('btn-sparklines').classList.toggle('active', _sparklinesEnabled);
+  rerender();
+});
+
+$('btn-heat').addEventListener('click', () => {
+  _heatMapEnabled = !_heatMapEnabled;
+  $('btn-heat').classList.toggle('active', _heatMapEnabled);
+  if (_heatMapEnabled) applyHeatMap(); else clearHeatMap();
+});
+
+// ─────────────────────────────────────────────────────────────
+// Column filters
+// ─────────────────────────────────────────────────────────────
+function updateFilterBadge() {
+  const badge = $('filter-badge');
+  const count = Object.values(_colFilters).reduce((n, s) => n + s.size, 0);
+  if (count === 0) { badge.classList.add('hidden-el'); return; }
+  badge.textContent = `${count} filter${count > 1 ? 's' : ''} ×`;
+  badge.classList.remove('hidden-el');
+}
+
+$('filter-badge').addEventListener('click', () => {
+  _colFilters = {};
+  buildFilterBar();
+  applyColFilters();
+  updateFilterBadge();
+  if (_heatMapEnabled) applyHeatMap();
+});
+
+function buildFilterBar() {
+  const bar = $('filter-bar');
+  if (!_structure) return;
+  const { columns, groups } = _structure;
+  const strCols = columns.filter(c => c.type === 'string' && !_hiddenCols.has(c.name));
+  if (strCols.length === 0) { bar.classList.add('hidden-el'); return; }
+
+  bar.innerHTML = `<span class="filter-bar-label">Filter</span>`;
+
+  for (const col of strCols) {
+    const values = [...new Set(groups.flatMap(g => g.rows).map(r => String(r[col.name] ?? '')).filter(Boolean))].sort();
+    if (values.length < 2 || values.length > 20) continue; // skip low-cardinality or huge columns
+
+    const active = _colFilters[col.name] || new Set();
+    const group = document.createElement('div');
+    group.className = 'filter-group';
+    group.innerHTML = `<span class="filter-group-name">${escHtml(col.name)}</span>`;
+
+    for (const val of values) {
+      const chip = document.createElement('span');
+      chip.className = 'filter-chip' + (active.has(val) ? ' active' : '');
+      chip.textContent = val;
+      chip.dataset.col = col.name;
+      chip.dataset.val = val;
+      group.appendChild(chip);
+    }
+
+    if (active.size > 0) {
+      const clr = document.createElement('span');
+      clr.className = 'filter-clear';
+      clr.textContent = '✕';
+      clr.dataset.clearCol = col.name;
+      group.appendChild(clr);
+    }
+    bar.appendChild(group);
+  }
+
+  const hasGroups = bar.querySelectorAll('.filter-group').length > 0;
+  bar.classList.toggle('hidden-el', !hasGroups);
+}
+
+function applyColFilters() {
+  const tbody = $('table-body');
+  const hasFilters = Object.values(_colFilters).some(s => s.size > 0);
+  for (const tr of tbody.querySelectorAll('.row-data')) {
+    if (tr.dataset.collapsedByGroup) continue;
+    if (!hasFilters) { tr.classList.remove('hidden'); continue; }
+    const row = tr._rowData;
+    if (!row) continue;
+    let pass = true;
+    for (const [col, vals] of Object.entries(_colFilters)) {
+      if (vals.size === 0) continue;
+      if (!vals.has(String(row[col] ?? ''))) { pass = false; break; }
+    }
+    tr.classList.toggle('hidden', !pass);
+  }
+}
+
+$('filter-bar').addEventListener('click', (e) => {
+  const chip = e.target.closest('.filter-chip');
+  if (chip) {
+    const { col, val } = chip.dataset;
+    if (!_colFilters[col]) _colFilters[col] = new Set();
+    if (_colFilters[col].has(val)) _colFilters[col].delete(val);
+    else _colFilters[col].add(val);
+    buildFilterBar(); applyColFilters(); updateFilterBadge();
+    if (_heatMapEnabled) applyHeatMap();
+    return;
+  }
+  const clrBtn = e.target.closest('[data-clear-col]');
+  if (clrBtn) {
+    delete _colFilters[clrBtn.dataset.clearCol];
+    buildFilterBar(); applyColFilters(); updateFilterBadge();
+    if (_heatMapEnabled) applyHeatMap();
+  }
 });
 
 // Pivot toggle
-document.getElementById('btn-pivot').addEventListener('click', () => {
+$('btn-pivot').addEventListener('click', () => {
   if (_pivotActive) deactivatePivotMode(); else activatePivotMode();
 });
-document.getElementById('btn-exit-pivot').addEventListener('click', deactivatePivotMode);
+$('btn-exit-pivot').addEventListener('click', deactivatePivotMode);
 
 // Pivot selectors
-document.getElementById('pivot-user-select').addEventListener('change', refreshPivot);
-document.getElementById('pivot-metric-select').addEventListener('change', refreshPivot);
+$('pivot-user-select').addEventListener('change', refreshPivot);
+$('pivot-metric-select').addEventListener('change', refreshPivot);
+
+// Chart toggle
+$('btn-chart-toggle').addEventListener('click', () => {
+  if (!_pivotActive) return;
+  _timelineMode = !_timelineMode;
+  $('btn-chart-toggle').classList.toggle('active', _timelineMode);
+  $('btn-period-order').classList.toggle('hidden-el', !_timelineMode);
+  if (!_timelineMode) _periodReversed = false;
+  refreshPivot();
+});
+
+// Period order toggle
+$('btn-period-order').addEventListener('click', () => {
+  _periodReversed = !_periodReversed;
+  refreshPivot();
+});
+
+// Timeline tooltip
+const _tooltip = document.createElement('div');
+_tooltip.className = 'timeline-tooltip';
+document.body.appendChild(_tooltip);
+document.addEventListener('mouseover', (e) => {
+  const dot = e.target.closest('.timeline-dot');
+  if (!dot) return;
+  _tooltip.innerHTML = `<strong>${dot.dataset.series}</strong>${dot.dataset.period}: <b>${fmt(Number(dot.dataset.value))}</b>`;
+  _tooltip.classList.add('visible');
+});
+document.addEventListener('mousemove', (e) => {
+  if (!_tooltip.classList.contains('visible')) return;
+  _tooltip.style.left = (e.clientX + 14) + 'px';
+  _tooltip.style.top  = (e.clientY - 28) + 'px';
+});
+document.addEventListener('mouseout', (e) => {
+  if (e.target.closest('.timeline-dot')) _tooltip.classList.remove('visible');
+});
 
 // ─────────────────────────────────────────────────────────────
 // Nested Object Modal
@@ -1558,13 +2482,13 @@ function openNestedModal(tr, colName) {
   _nestedModalState = { matchingRows, isObjOfObjs, sortedPeriods, metricList };
 
   const titleParts = stringCols.map(c => keyValues[c.name]).filter(Boolean);
-  document.getElementById('modal-title').textContent =
+  $('modal-title').textContent =
     (titleParts.join(' · ') || 'Record') + ' — ' + colName;
-  document.getElementById('modal-footer').classList.add('hidden-el');
+  $('modal-footer').classList.add('hidden-el');
   document.querySelector('.modal-box').classList.add('modal-wide');
 
   renderNestedContent('all');
-  document.getElementById('record-modal').classList.remove('hidden-el');
+  $('record-modal').classList.remove('hidden-el');
 }
 
 function renderNestedContent(activePeriod) {
@@ -1676,7 +2600,7 @@ function renderNestedContent(activePeriod) {
     html += `</tbody></table>`;
   }
 
-  document.getElementById('modal-body').innerHTML = html;
+  $('modal-body').innerHTML = html;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1706,7 +2630,7 @@ function openRecordModal(tr) {
 
   // Title
   const titleParts = stringCols.map(c => keyValues[c.name]).filter(Boolean);
-  document.getElementById('modal-title').textContent = titleParts.join(' · ') || 'Record Detail';
+  $('modal-title').textContent = titleParts.join(' · ') || 'Record Detail';
 
   // Body
   let bodyHtml = '';
@@ -1732,10 +2656,10 @@ function openRecordModal(tr) {
     });
     bodyHtml += `</tbody></table>`;
   }
-  document.getElementById('modal-body').innerHTML = bodyHtml;
+  $('modal-body').innerHTML = bodyHtml;
 
   // Footer: totals for numeric columns (grouped mode)
-  const footer = document.getElementById('modal-footer');
+  const footer = $('modal-footer');
   if (mode === 'grouped' && numCols.length > 0) {
     let footerHtml = '';
     for (const col of numCols) {
@@ -1767,17 +2691,28 @@ function openRecordModal(tr) {
     footer.classList.add('hidden-el');
   }
 
-  document.getElementById('record-modal').classList.remove('hidden-el');
+  $('record-modal').classList.remove('hidden-el');
 }
 
 function closeModal() {
-  document.getElementById('record-modal').classList.add('hidden-el');
+  $('record-modal').classList.add('hidden-el');
   document.querySelector('.modal-box').classList.remove('modal-wide');
   _nestedModalState = null;
 }
 
-// Row click → open nested or record modal
-document.getElementById('table-body').addEventListener('click', (e) => {
+// Row click → copy, nested, or record modal
+$('table-body').addEventListener('click', (e) => {
+  const copyBtn = e.target.closest('.copy-row-btn');
+  if (copyBtn) {
+    e.stopPropagation();
+    const tr = copyBtn.closest('tr');
+    if (tr && tr._rowData) {
+      navigator.clipboard.writeText(JSON.stringify(tr._rowData, null, 2))
+        .then(() => showToast('Row JSON copied'))
+        .catch(() => showToast('Copy failed'));
+    }
+    return;
+  }
   const badge = e.target.closest('.nested-badge');
   if (badge) {
     const td = badge.closest('td');
@@ -1790,19 +2725,58 @@ document.getElementById('table-body').addEventListener('click', (e) => {
 });
 
 // Period filter pills (event delegation on modal body)
-document.getElementById('modal-body').addEventListener('click', (e) => {
+$('modal-body').addEventListener('click', (e) => {
   const pill = e.target.closest('.nested-filter-pill');
   if (pill && _nestedModalState) renderNestedContent(pill.dataset.period);
 });
 
 // Close on X button, backdrop click, or Escape
-document.getElementById('modal-close').addEventListener('click', closeModal);
-document.getElementById('record-modal').addEventListener('click', (e) => {
+$('modal-close').addEventListener('click', closeModal);
+$('record-modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeModal();
 });
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Escape') { closeModal(); return; }
+
+  // Arrow key row navigation — only when modal is closed and not typing in an input
+  if (e.target.matches('input, textarea, select')) return;
+  const modalOpen = !$('record-modal').classList.contains('hidden-el');
+  if (modalOpen) return;
+
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const rows = [...document.querySelectorAll('#table-body .row-data:not(.hidden)')];
+    if (rows.length === 0) return;
+    const currentIdx = rows.findIndex(r => r.classList.contains('keyboard-focused'));
+    rows.forEach(r => r.classList.remove('keyboard-focused'));
+    let next = e.key === 'ArrowDown' ? currentIdx + 1 : currentIdx - 1;
+    next = Math.max(0, Math.min(next, rows.length - 1));
+    rows[next].classList.add('keyboard-focused');
+    rows[next].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  if (e.key === 'Enter') {
+    const focused = document.querySelector('#table-body .row-data.keyboard-focused');
+    if (focused) openRecordModal(focused);
+  }
 });
+
+// ─────────────────────────────────────────────────────────────
+// Boot: restore from URL hash + sessionStorage
+// ─────────────────────────────────────────────────────────────
+_pendingState = parseViewStateHash();
+
+// Auto-load from scrambler import or previous session
+const _importJson = (() => {
+  try {
+    const imp = sessionStorage.getItem('viewer-import');
+    if (imp) { sessionStorage.removeItem('viewer-import'); return imp; }
+    return sessionStorage.getItem('viewer-session-json') || null;
+  } catch (e) { return null; }
+})();
+if (_importJson) {
+  try { loadJSON(_importJson); } catch (e) { /* ignore stale session */ }
+}
 </script>
 </body>
 </html>
