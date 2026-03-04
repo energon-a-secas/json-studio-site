@@ -569,7 +569,7 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "JSON Studio",
-  "description": "Visual, block-based JSON editor. Drag blocks, edit inline, and preview with syntax highlighting.",
+  "description": "Drag blocks to build JSON visually. Edit inline and preview with syntax highlighting.",
   "url": "https://jsonstudio.neorgon.com/",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Any",
@@ -586,11 +586,11 @@
     <a href="https://ehq.cl/" target="_blank" rel="noopener noreferrer"><img src="energon-classic-logo.png" class="header-logo-img" alt="Neorgon"></a>
     <div>
       <h1>JSON Studio</h1>
-      <div class="header-subtitle">Build any JSON structure without typing brackets</div>
+      <div class="header-subtitle">Drag blocks, edit values, export clean JSON</div>
     </div>
   </div>
   <div class="header-nav">
-    <a href="viewer/" class="header-nav-link">Dynamic Viewer</a>
+    <a href="viewer/" class="header-nav-link">JSON Viewer</a>
     <a href="https://neorgon.com/" class="header-home" title="neorgon.com" aria-label="Neorgon home" target="_blank" rel="noopener noreferrer">
       <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     </a>
@@ -645,7 +645,7 @@
       <button class="icon-btn" onclick="triggerImport()">Import JSON</button>
       <input type="file" id="file-import" accept=".json,application/json" style="display:none">
       <button class="icon-btn" onclick="clearCanvas()">Clear</button>
-      <button id="json-toggle-btn" class="icon-btn" onclick="toggleJSONPanel()" style="display:none;margin-left:auto">{ } JSON</button>
+      <button id="json-toggle-btn" class="icon-btn" onclick="toggleJSONPanel()" style="display:none;margin-left:auto">Show JSON</button>
     </div>
     <div class="canvas-scroll" id="canvas-scroll">
       <div id="tree-root"></div>
@@ -1246,7 +1246,7 @@ function toggleJSONPanel() {
 function _syncToggleBtn() {
   const btn = document.getElementById('json-toggle-btn');
   if (!btn) return;
-  btn.textContent = document.querySelector('.json-panel').classList.contains('panel-open') ? '✕ JSON' : '{ } JSON';
+  btn.textContent = document.querySelector('.json-panel').classList.contains('panel-open') ? 'Hide JSON' : 'Show JSON';
 }
 
 // ═══════════════════════════════════════════

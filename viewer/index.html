@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dynamic Viewer</title>
-  <meta name="description" content="Paste or upload JSON and explore records as a searchable nested table with live aggregate stats.">
+  <title>JSON Viewer</title>
+  <meta name="description" content="Paste JSON and explore records in a searchable table with live stats, filters, and pivot views">
   <meta name="theme-color" content="#040714">
   <link rel="icon" type="image/x-icon" href="../favicon.ico" />
   <style>
@@ -785,14 +785,14 @@
       <img src="../energon-classic-logo.png" class="header-logo-img" alt="Energon">
     </a>
     <div>
-      <h1>Dynamic Viewer</h1>
-      <div class="header-subtitle">JSON explorer with live stats</div>
+      <h1>JSON Viewer</h1>
+      <div class="header-subtitle">Explore, filter, and pivot any JSON dataset</div>
     </div>
   </div>
   <div class="header-actions">
     <a href="../" class="btn btn-ghost" style="text-decoration:none">JSON Builder</a>
     <a href="../scrambler/" class="btn btn-ghost" style="text-decoration:none">Scrambler</a>
-    <button id="btn-new-json" class="btn btn-ghost hidden-el">Load new JSON</button>
+    <button id="btn-new-json" class="btn btn-ghost hidden-el">Load JSON</button>
     <a href="https://neorgon.com/" class="header-home" title="neorgon.com" aria-label="Neorgon home" target="_blank" rel="noopener noreferrer">
       <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     </a>
@@ -803,9 +803,9 @@
 <main id="main">
 <div id="view-input">
   <div class="input-card">
-    <div class="input-title">Paste or drop a JSON file</div>
+    <div class="input-title">Paste JSON or drop a file</div>
     <div class="drop-zone" id="drop-zone">
-      <textarea id="json-input" placeholder="Paste JSON here…&#10;&#10;Supported shapes:&#10;  [ { … }, … ]                      — flat array of records&#10;  { &quot;GROUP&quot;: { &quot;key&quot;: [ … ] } }   — grouped records"></textarea>
+      <textarea id="json-input" placeholder="Paste JSON here…&#10;&#10;Supported shapes:&#10;  [ { … }, … ]                      Flat array of records&#10;  { &quot;GROUP&quot;: { &quot;key&quot;: [ … ] } }   Grouped records"></textarea>
     </div>
     <div id="error-msg" class="error-msg"></div>
     <div class="input-row">
@@ -835,7 +835,7 @@
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
       </span>
-      <input type="text" id="search-input" placeholder="Search across all records…">
+      <input type="text" id="search-input" placeholder="Search records…">
       <button class="btn-regex" id="btn-regex" title="Toggle regex search">.*</button>
     </div>
     <span class="match-count" id="match-count"></span>
@@ -983,7 +983,7 @@ const DEMOS = [
     }
   },
   {
-    label: 'SaaS Metrics', sub: 'Complex — nested + many cols',
+    label: 'SaaS Metrics', sub: 'Nested data, many columns',
     data: {
       'Growth': { accounts: [
         { name: 'Acme Corp',      tier: 'Enterprise', mrr: 12400, arr: 148800, seats: 240, active_seats: 198, usage_pct: 82.5, nps: 72, churn_risk: 'low',      csm: 'Leila', health: { '1m': { logins: 3200, tickets:  4 }, '3m': { logins:  9100, tickets: 11 }, '6m': { logins: 17800, tickets: 22 } } },
@@ -1162,7 +1162,7 @@ function detectStructure(parsed) {
       groups.push({ name: k, rows });
     }
   } else {
-    throw new Error('JSON must be an array or an object at the root level.');
+    throw new Error('JSON must start with [ ] or { } at the top level.');
   }
 
   // Collect columns: union of all field names across all rows
@@ -2137,7 +2137,7 @@ $('btn-regex').addEventListener('click', () => {
   const input = $('search-input');
   btn.classList.toggle('active', _regexSearch);
   input.classList.toggle('regex-mode', _regexSearch);
-  input.placeholder = _regexSearch ? 'Search with regex…' : 'Search across all records…';
+  input.placeholder = _regexSearch ? 'Search with regex…' : 'Search records…';
   applyFilter(input.value);
 });
 
