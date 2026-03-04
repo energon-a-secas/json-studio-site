@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JSON Studio — Visual JSON Builder</title>
-  <meta name="description" content="Build any JSON structure by dragging typed blocks. Edit keys and values inline, preview with syntax highlighting, import or export instantly.">
+  <meta name="description" content="Drag typed blocks to build JSON visually. Edit keys and values inline, preview with syntax highlighting, then export">
   <meta property="og:title" content="JSON Studio — Visual JSON Builder">
-  <meta property="og:description" content="Drag typed blocks to build any JSON structure. Edit inline, preview live, import or export.">
+  <meta property="og:description" content="Drag typed blocks to build JSON visually. Edit inline, preview live, import or export.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://jsonstudio.neorgon.com/">
   <meta property="og:site_name" content="Neorgon">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="JSON Studio — Visual JSON Builder">
-  <meta name="twitter:description" content="Drag typed blocks to build any JSON structure. Edit inline, preview live, import or export.">
+  <meta name="twitter:description" content="Drag typed blocks to build JSON visually. Edit inline, preview live, import or export.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://jsonstudio.neorgon.com/">
   <meta property="og:locale" content="en_US">
@@ -25,7 +25,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
       --bg: #040714;
@@ -37,7 +37,7 @@
       --border-strong: rgba(255,255,255,0.2);
       --text-primary: #f9f9f9;
       --text-secondary: #cacaca;
-      --text-muted: rgba(255,255,255,0.45);
+      --text-muted: rgba(255,255,255,0.55);
       --accent: #0063e5;
       --accent-bright: #0080ff;
       --danger: #ef4444;
@@ -65,9 +65,9 @@
     }
 
     body {
-      font-family: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: #040714;
-      color: #f9f9f9;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-primary);
       height: 100vh;
       overflow: hidden;
       display: flex;
@@ -97,7 +97,7 @@
 
     /* ── Header ── */
     .header-bar {
-      background: linear-gradient(135deg, #B015B0 0%, #3D0080 45%, #080010 100%);
+      background: linear-gradient(in oklch 135deg, #B015B0 0%, #3D0080 50%, #040714 100%);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.07);
       padding: 0 24px;
@@ -549,6 +549,20 @@
       .palette-block { padding: 8px 6px; gap: 6px; }
       .palette-block span:not(.type-dot):not(.palette-mono) { display: none; }
     }
+    :focus-visible {
+      outline: 2px solid var(--accent-bright, #0080ff);
+      outline-offset: 2px;
+    }
+    .skip-link {
+      position: absolute; top: -100%; left: 16px; z-index: 1000;
+      padding: 8px 16px; background: var(--accent-bright, #0080ff); color: #000;
+      font-weight: 600; font-size: .875rem; border-radius: 0 0 6px 6px;
+      text-decoration: none; transition: top .2s;
+    }
+    .skip-link:focus { top: 0; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
   </style>
 <script type="application/ld+json">
 {
@@ -566,7 +580,8 @@
 </head>
 <body>
 
-<div class="header-bar">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="header-bar">
   <div class="header-logo">
     <a href="https://ehq.cl/" target="_blank" rel="noopener noreferrer"><img src="energon-classic-logo.png" class="header-logo-img" alt="Neorgon"></a>
     <div>
@@ -576,13 +591,13 @@
   </div>
   <div class="header-nav">
     <a href="viewer/" class="header-nav-link">Dynamic Viewer</a>
-    <a href="https://neorgon.com/" class="header-home" title="neorgon.com" target="_blank" rel="noopener noreferrer">
+    <a href="https://neorgon.com/" class="header-home" title="neorgon.com" aria-label="Neorgon home" target="_blank" rel="noopener noreferrer">
       <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     </a>
   </div>
-</div>
+</header>
 
-<div class="workspace">
+<div class="workspace" id="main">
 
   <!-- Palette -->
   <aside class="palette">
