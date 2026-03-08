@@ -51,6 +51,8 @@ python3 -m http.server 8777
 
 ## Architecture
 
+![Architecture](docs/architecture.svg)
+
 Single file: `index.html` (~1100 lines, inline CSS + JS). No build step, no dependencies.
 
 State lives in memory only (no `localStorage`). Core structures:
