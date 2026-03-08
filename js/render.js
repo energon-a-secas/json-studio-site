@@ -36,6 +36,8 @@ export function renderNode(node, parentId, isRoot) {
   // ── block row ──
   const block = document.createElement('div');
   block.className = `node-block lb-${node.type}`;
+  block.dataset.nodeId = String(node.id);
+  if (!isRoot) block.setAttribute('tabindex', '0');
 
   // Drag handle (not for root)
   if (!isRoot) {

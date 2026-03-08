@@ -3,10 +3,19 @@
 // ═══════════════════════════════════════════
 
 import { state } from './state.js';
+
+// Start-from templates (good practice shapes for Visualizer)
+const BUILD_TEMPLATES = [
+  { label: 'Empty object', sub: '{}', value: {} },
+  { label: 'Empty array', sub: '[]', value: [] },
+  { label: 'Array of objects', sub: 'Flat list, 2 sample rows', value: [ { id: 1, name: '', value: 0 }, { id: 2, name: '', value: 0 } ] },
+  { label: 'Grouped (e.g. projects → people)', sub: 'Visualizer pivot-friendly shape', value: { 'Project A': { people: [ { name: '', role: '', allocation: { '12m': { hours: 0, tasks: 0 }, '6m': { hours: 0, tasks: 0 } } } ] }, 'Project B': { people: [] } } },
+];
 import {
   createNode,
   addNodeAt,
   moveNode,
+  removeNode,
   isDescendant,
   nodeToValue,
   jsonToTree
@@ -29,6 +38,7 @@ function handleDrop(targetParentId, targetIndex) {
     moveNode(nodeId, targetParentId, targetIndex);
   }
   state.drag = null;
+  document.getElementById('canvas-scroll')?.classList.remove('canvas-drag-from-palette');
   render();
 }
 
@@ -173,8 +183,47 @@ export function downloadJSON() {
   URL.revokeObjectURL(a.href);
 }
 
+/** Serialize current tree to JSON, store in sessionStorage, and navigate to Visualizer. */
+export function openInViewer() {
+  const json = JSON.stringify(nodeToValue(state.root), null, 2);
+  try {
+    sessionStorage.setItem('viewer-import', json);
+    window.location.href = 'visualizer/';
+  } catch (e) {
+    alert('Could not open in Visualizer: ' + (e.message || 'storage failed'));
+  }
+}
+
 export function triggerImport() {
   document.getElementById('file-import').click();
+}
+
+export function toggleTemplates() {
+  const dropdown = document.getElementById('templates-dropdown');
+  if (!dropdown) return;
+  if (dropdown.classList.contains('hidden-el')) {
+    dropdown.innerHTML = '';
+    BUILD_TEMPLATES.forEach((t, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'template-item';
+      btn.dataset.index = String(i);
+      btn.innerHTML = `${t.label}<span class="template-sub">${t.sub}</span>`;
+      btn.addEventListener('click', () => {
+        loadFromValue(t.value);
+        dropdown.classList.add('hidden-el');
+      });
+      dropdown.appendChild(btn);
+    });
+    dropdown.classList.remove('hidden-el');
+  } else {
+    dropdown.classList.add('hidden-el');
+  }
+}
+
+function closeTemplatesOnClickOutside(e) {
+  const wrap = document.querySelector('.templates-wrap');
+  if (wrap && !wrap.contains(e.target)) document.getElementById('templates-dropdown')?.classList.add('hidden-el');
 }
 
 export function toggleJSONPanel() {
@@ -193,13 +242,19 @@ function _syncToggleBtn() {
 // ═══════════════════════════════════════════
 
 export function setupEvents() {
-  // Palette drag
+  const canvasScroll = document.getElementById('canvas-scroll');
+
+  // Palette drag: show drop affordance on canvas
   document.querySelectorAll('.palette-block').forEach(block => {
     block.addEventListener('dragstart', e => {
       state.drag = { source: 'palette', type: block.dataset.type };
       e.dataTransfer.effectAllowed = 'copy';
+      canvasScroll?.classList.add('canvas-drag-from-palette');
     });
-    block.addEventListener('dragend', () => { /* no-op */ });
+    block.addEventListener('dragend', () => {
+      state.drag = null;
+      canvasScroll?.classList.remove('canvas-drag-from-palette');
+    });
   });
 
   // File import handler
@@ -223,6 +278,46 @@ export function setupEvents() {
   // Prevent canvas from blocking drops at the top level
   document.getElementById('canvas-scroll').addEventListener('dragover', e => e.preventDefault());
 
+  // Keyboard: Delete node, Expand/Collapse all, Copy node as JSON
+  document.addEventListener('keydown', (e) => {
+    const inInput = e.target.matches('input, textarea');
+    const nodeEl = e.target.closest('.node');
+    const nodeId = nodeEl ? parseInt(nodeEl.dataset.nodeId, 10) : null;
+    const node = nodeId != null ? state.nodeMap[nodeId] : null;
+
+    // Expand all (Ctrl+Shift+E)
+    if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+      e.preventDefault();
+      Object.values(state.nodeMap).forEach(n => { if (n.children) n.collapsed = false; });
+      render();
+      return;
+    }
+    // Collapse all (Ctrl+Shift+C)
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+      e.preventDefault();
+      Object.values(state.nodeMap).forEach(n => { if (n.children) n.collapsed = true; });
+      render();
+      return;
+    }
+    // Copy node as JSON (Ctrl+Shift+J)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+      e.preventDefault();
+      if (node && nodeId !== 0) {
+        const json = JSON.stringify(nodeToValue(node), null, 2);
+        navigator.clipboard.writeText(json).catch(() => {});
+      }
+      return;
+    }
+    // Delete node (Delete key, only when not in input)
+    if (e.key === 'Delete' && !inInput && node && nodeId !== 0) {
+      e.preventDefault();
+      const hasChildren = node.children && node.children.length > 0;
+      if (hasChildren && !confirm(`Delete this node and its ${node.children.length} child${node.children.length === 1 ? '' : 'ren'}?`)) return;
+      removeNode(nodeId);
+      render();
+    }
+  });
+
   // Expose needed functions on window for inline onclick handlers
   window.setRootType     = setRootType;
   window.triggerImport   = triggerImport;
@@ -232,4 +327,8 @@ export function setupEvents() {
   window.copyJSON        = copyJSON;
   window.downloadJSON    = downloadJSON;
   window.applyJSON       = applyJSON;
+  window.openInViewer    = openInViewer;
+  window.toggleTemplates = toggleTemplates;
+
+  document.addEventListener('click', closeTemplatesOnClickOutside);
 }

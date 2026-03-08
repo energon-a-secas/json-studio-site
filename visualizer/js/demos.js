@@ -4,6 +4,7 @@
 export const DEMOS = [
   {
     label: 'Sales Orders', sub: 'Flat array',
+    title: 'Flat array of orders — sort, filter, search, and export to CSV.',
     data: [
       { order_id: 'ORD-001', customer: 'Alice Brown',    product: 'Laptop Pro',     qty: 1, unit_price: 1299.99, total: 1299.99, status: 'shipped',   region: 'West'  },
       { order_id: 'ORD-002', customer: 'Bob Chen',       product: 'Wireless Mouse', qty: 3, unit_price:   29.99, total:   89.97, status: 'delivered', region: 'East'  },
@@ -20,7 +21,22 @@ export const DEMOS = [
     ]
   },
   {
+    label: 'Events log', sub: 'Flat array',
+    title: 'Simple flat list — timestamps, level, message. Good for log-style data.',
+    data: [
+      { ts: '2024-01-15T09:00:00Z', level: 'info',  message: 'Server started',        source: 'api' },
+      { ts: '2024-01-15T09:01:22Z', level: 'warn',  message: 'High memory usage',     source: 'worker' },
+      { ts: '2024-01-15T09:05:11Z', level: 'error', message: 'Connection timeout',    source: 'api' },
+      { ts: '2024-01-15T09:12:00Z', level: 'info',  message: 'Cache warmed',          source: 'cron' },
+      { ts: '2024-01-15T09:15:33Z', level: 'debug', message: 'Request completed',     source: 'api' },
+      { ts: '2024-01-15T09:20:01Z', level: 'info',  message: 'Backup finished',        source: 'cron' },
+      { ts: '2024-01-15T09:22:44Z', level: 'warn',  message: 'Retry attempt 2/3',     source: 'worker' },
+      { ts: '2024-01-15T09:30:00Z', level: 'info',  message: 'Health check passed',   source: 'api' }
+    ]
+  },
+  {
     label: 'Team Stats', sub: 'Grouped by department',
+    title: 'Grouped by department — collapse groups, filter by column values.',
     data: {
       'Engineering': { members: [
         { name: 'Sam Torres',  role: 'Backend',  level: 'Senior', tickets_closed: 87, pr_reviews: 34, bugs_filed: 12, velocity: 42.5, satisfaction: 4.8 },
@@ -48,6 +64,7 @@ export const DEMOS = [
   },
   {
     label: 'Project Activity', sub: 'Grouped + nested history',
+    title: 'Grouped by project with period metrics — use Pivot to pick a user and metric across projects.',
     data: {
       'COSP': { users: [
         { name: 'Dave',  role: 'lead',     history: { '12m': { tickets: 14, dynamic_percentage: 13.3 }, '6m': { tickets: 6,  dynamic_percentage: 17.1 }, '3m': { tickets: 0, dynamic_percentage: 0.0  }, '1m': { tickets: 0, dynamic_percentage: 0.0  } } },
@@ -71,7 +88,32 @@ export const DEMOS = [
     }
   },
   {
+    label: 'People per project', sub: 'Pivot by person · see user info',
+    title: 'People per project — pivot by person to see hours/tasks across projects; click a row to see full user info.',
+    data: {
+      'Platform': { people: [
+        { name: 'Jordan Lee',   email: 'jordan@co.io',     role: 'Tech Lead',   allocation: { '12m': { hours: 420, tasks: 48 }, '6m': { hours: 210, tasks: 24 }, '3m': { hours: 105, tasks: 12 }, '1m': { hours: 38, tasks: 4 } } },
+        { name: 'Sam Chen',     email: 'sam@co.io',       role: 'Backend',    allocation: { '12m': { hours: 380, tasks: 42 }, '6m': { hours: 190, tasks: 21 }, '3m': { hours: 92, tasks: 10 }, '1m': { hours: 32, tasks: 3 } } },
+        { name: 'Alex Rivera',  email: 'alex@co.io',       role: 'Frontend',   allocation: { '12m': { hours: 360, tasks: 38 }, '6m': { hours: 178, tasks: 19 }, '3m': { hours: 88, tasks: 9 }, '1m': { hours: 30, tasks: 3 } } },
+        { name: 'Morgan Kim',   email: 'morgan@co.io',     role: 'QA',         allocation: { '12m': { hours: 320, tasks: 35 }, '6m': { hours: 158, tasks: 17 }, '3m': { hours: 78, tasks: 8 }, '1m': { hours: 26, tasks: 2 } } }
+      ]},
+      'Mobile': { people: [
+        { name: 'Jordan Lee',   email: 'jordan@co.io',     role: 'Tech Lead',   allocation: { '12m': { hours: 80, tasks: 8 }, '6m': { hours: 42, tasks: 4 }, '3m': { hours: 20, tasks: 2 }, '1m': { hours: 6, tasks: 1 } } },
+        { name: 'Sam Chen',     email: 'sam@co.io',       role: 'Backend',    allocation: { '12m': { hours: 120, tasks: 12 }, '6m': { hours: 58, tasks: 6 }, '3m': { hours: 28, tasks: 3 }, '1m': { hours: 10, tasks: 1 } } },
+        { name: 'Casey Wong',  email: 'casey@co.io',     role: 'Mobile',    allocation: { '12m': { hours: 400, tasks: 44 }, '6m': { hours: 198, tasks: 22 }, '3m': { hours: 98, tasks: 11 }, '1m': { hours: 34, tasks: 4 } } },
+        { name: 'Riley Park',  email: 'riley@co.io',      role: 'Mobile',    allocation: { '12m': { hours: 350, tasks: 36 }, '6m': { hours: 172, tasks: 18 }, '3m': { hours: 85, tasks: 9 }, '1m': { hours: 28, tasks: 3 } } }
+      ]},
+      'Data': { people: [
+        { name: 'Alex Rivera',  email: 'alex@co.io',       role: 'Frontend',   allocation: { '12m': { hours: 60, tasks: 6 }, '6m': { hours: 30, tasks: 3 }, '3m': { hours: 14, tasks: 1 }, '1m': { hours: 4, tasks: 0 } } },
+        { name: 'Morgan Kim',   email: 'morgan@co.io',     role: 'QA',         allocation: { '12m': { hours: 180, tasks: 20 }, '6m': { hours: 88, tasks: 10 }, '3m': { hours: 44, tasks: 5 }, '1m': { hours: 15, tasks: 2 } } },
+        { name: 'Casey Wong',   email: 'casey@co.io',     role: 'Mobile',    allocation: { '12m': { hours: 40, tasks: 4 }, '6m': { hours: 20, tasks: 2 }, '3m': { hours: 10, tasks: 1 }, '1m': { hours: 3, tasks: 0 } } },
+        { name: 'Jamie Fox',    email: 'jamie@co.io',     role: 'Data Eng',  allocation: { '12m': { hours: 440, tasks: 52 }, '6m': { hours: 218, tasks: 26 }, '3m': { hours: 108, tasks: 13 }, '1m': { hours: 36, tasks: 4 } } }
+      ]}
+    }
+  },
+  {
     label: 'SaaS Metrics', sub: 'Nested data, many columns',
+    title: 'Grouped accounts with nested health by period — click nested cells to see period breakdown.',
     data: {
       'Growth': { accounts: [
         { name: 'Acme Corp',      tier: 'Enterprise', mrr: 12400, arr: 148800, seats: 240, active_seats: 198, usage_pct: 82.5, nps: 72, churn_risk: 'low',      csm: 'Leila', health: { '1m': { logins: 3200, tickets:  4 }, '3m': { logins:  9100, tickets: 11 }, '6m': { logins: 17800, tickets: 22 } } },

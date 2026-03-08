@@ -549,6 +549,10 @@ thead th.sort-desc .sort-icon { opacity: 1; color: var(--accent); }
 .btn-pivot-toggle.active {
   background: var(--active-bg); color: var(--active-color); border: 1px solid var(--active-border);
 }
+.pivot-hint {
+  font-size: 0.8rem; color: var(--text-muted);
+  white-space: nowrap; flex-shrink: 0;
+}
 
 /* ── Pivot Toolbar ── */
 .pivot-toolbar {

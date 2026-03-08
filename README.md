@@ -39,6 +39,11 @@ A drag-and-drop JSON editor for building any JSON structure visually. No install
 - **Live preview** — syntax-highlighted JSON output in the right panel
 - **Edit mode** — paste raw JSON directly; parse errors shown inline
 - **Import / Download** — load any `.json` file or save the result
+- **Open in Visualizer** — send current JSON to the [JSON Visualizer](visualizer/) to explore, filter, and pivot
+- **Templates** — start from empty object/array, array of objects, or grouped (pivot-friendly) shape
+- **Keyboard** — Delete node, Expand/Collapse all (Ctrl+Shift+E / C), Copy node as JSON (Ctrl+Shift+J)
+
+For JSON shapes that work best with the Visualizer (flat list, grouped, pivot), see [docs/patterns.md](docs/patterns.md).
 
 ## Running
 

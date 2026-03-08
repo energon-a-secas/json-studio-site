@@ -53,8 +53,9 @@
     </div>
   </div>
   <div class="header-nav">
-    <a href="viewer/" class="header-nav-link">JSON Viewer</a>
-    <a href="https://neorgon.com/" class="header-home" title="neorgon.com" aria-label="Neorgon home">
+    <a href="visualizer/" class="header-nav-link" title="Explore, filter, and pivot JSON in a table">Visualizer</a>
+    <a href="scrambler/" class="header-nav-link" title="Anonymise JSON for safe sharing">Scrambler</a>
+    <a href="https://neorgon.com/" class="header-home" title="Neorgon home" aria-label="Neorgon home">
       <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     </a>
   </div>
@@ -105,8 +106,13 @@
         <button class="root-type-btn active" id="btn-obj" onclick="setRootType('object')">{ } Object</button>
         <button class="root-type-btn" id="btn-arr" onclick="setRootType('array')">[ ] Array</button>
       </div>
+      <div class="templates-wrap">
+        <button class="icon-btn" id="btn-templates" onclick="toggleTemplates()" title="Start from a template">Templates ▾</button>
+        <div class="templates-dropdown hidden-el" id="templates-dropdown"></div>
+      </div>
       <button class="icon-btn" onclick="triggerImport()">Import JSON</button>
       <input type="file" id="file-import" accept=".json,application/json" style="display:none">
+      <button class="icon-btn" id="btn-open-in-viewer" onclick="openInViewer()" title="Load this JSON in the Visualizer to explore, filter, and pivot">Open in Visualizer</button>
       <button class="icon-btn" onclick="clearCanvas()">Clear</button>
       <button id="json-toggle-btn" class="icon-btn" onclick="toggleJSONPanel()" style="display:none;margin-left:auto">Show JSON</button>
     </div>

@@ -31,6 +31,7 @@ export function initEvents() {
   DEMOS.forEach((demo) => {
     const btn = document.createElement('button');
     btn.className = 'btn-example';
+    btn.title = demo.title || `${demo.label} — ${demo.sub}`;
     btn.innerHTML = `${escHtml(demo.label)}<span class="btn-example-sub">${escHtml(demo.sub)}</span>`;
     btn.addEventListener('click', () => loadJSON(JSON.stringify(demo.data)));
     container.appendChild(btn);

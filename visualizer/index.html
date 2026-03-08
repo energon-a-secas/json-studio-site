@@ -5,7 +5,7 @@
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; frame-ancestors 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JSON Viewer</title>
+  <title>JSON Visualizer</title>
   <meta name="description" content="Paste JSON and explore records in a searchable table with live stats, filters, and pivot views">
   <meta name="theme-color" content="#040714">
   <link rel="icon" type="image/x-icon" href="../favicon.ico" />
@@ -21,15 +21,15 @@
       <img src="../energon-classic-logo.png" class="header-logo-img" alt="Energon">
     </a>
     <div>
-      <h1>JSON Viewer</h1>
+      <h1>JSON Visualizer</h1>
       <div class="header-subtitle">Explore, filter, and pivot any JSON dataset</div>
     </div>
   </div>
   <div class="header-actions">
-    <a href="../" class="btn btn-ghost" style="text-decoration:none">JSON Builder</a>
-    <a href="../scrambler/" class="btn btn-ghost" style="text-decoration:none">Scrambler</a>
-    <button id="btn-new-json" class="btn btn-ghost hidden-el">Load JSON</button>
-    <a href="https://neorgon.com/" class="header-home" title="neorgon.com" aria-label="Neorgon home">
+    <a href="../" class="btn btn-ghost" style="text-decoration:none" title="Build JSON with drag-and-drop blocks">Builder</a>
+    <a href="../scrambler/" class="btn btn-ghost" style="text-decoration:none" title="Anonymise JSON for safe sharing">Scrambler</a>
+    <button id="btn-new-json" class="btn btn-ghost hidden-el" title="Clear and load new JSON">Load JSON</button>
+    <a href="https://neorgon.com/" class="header-home" title="Neorgon home" aria-label="Neorgon home">
       <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     </a>
   </div>
@@ -91,6 +91,7 @@
       <div class="cols-dropdown hidden-el" id="cols-dropdown"></div>
     </div>
     <button class="btn btn-pivot-toggle hidden-el" id="btn-pivot">Pivot</button>
+    <span class="pivot-hint hidden-el" id="pivot-hint">Pivot by user and metric to see values across groups.</span>
   </div>
   <div class="pivot-toolbar hidden-el" id="pivot-toolbar">
     <button class="btn btn-ghost btn-sm" id="btn-exit-pivot">

@@ -59,11 +59,14 @@ export function loadJSON(text) {
   // Detect pivot eligibility
   state.pivotConfig = detectPivotConfig(parsed);
   const btnPivot = $('btn-pivot');
+  const pivotHint = $('pivot-hint');
   if (state.pivotConfig) {
     btnPivot.classList.remove('hidden-el');
+    if (pivotHint) pivotHint.classList.remove('hidden-el');
     renderPivotToolbar(state.pivotConfig);
   } else {
     btnPivot.classList.add('hidden-el');
+    if (pivotHint) pivotHint.classList.add('hidden-el');
   }
 
   renderTable(state.structure);

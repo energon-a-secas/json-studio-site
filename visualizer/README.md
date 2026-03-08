@@ -1,10 +1,10 @@
-# Dynamic Viewer
+# JSON Visualizer
 
-A zero-dependency, single-file JSON explorer. Open `index.html` directly in any browser — no server or build step required.
+A zero-dependency JSON explorer. Open `index.html` directly in any browser — no server or build step required.
 
 ## What it does
 
-Paste or upload a JSON file and the viewer auto-detects its shape, renders the records as a searchable table, and shows live aggregate stats in a sidebar.
+Paste or upload a JSON file and the visualizer auto-detects its shape, renders the records as a searchable table, and shows live aggregate stats in a sidebar.
 
 ## Supported JSON shapes
 
@@ -32,7 +32,7 @@ Renders as a single flat table with no group headers.
   }
 }
 ```
-Each top-level key becomes a collapsible group. The viewer finds the first array-valued property inside each group and uses its items as rows. All groups are expected to share the same array key (detected from the first group).
+Each top-level key becomes a collapsible group. The visualizer finds the first array-valued property inside each group and uses its items as rows. All groups are expected to share the same array key (detected from the first group).
 
 ## Features
 
@@ -62,7 +62,7 @@ Dismiss with the × button, a click outside the modal, or Escape.
 
 ## Column type inference
 
-The viewer infers each column's type at load time:
+The visualizer infers each column's type at load time:
 
 - **number** — every non-null value across all groups is a JS `number`.
 - **string** — anything else (mixed types, strings, booleans, nulls).

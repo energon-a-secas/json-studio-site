@@ -113,9 +113,11 @@ export function renderPivotToolbar(pivotConfig) {
 
   const userSel = $('pivot-user-select');
   userSel.innerHTML = users.map(u => `<option value="${escHtml(u)}">${escHtml(u)}</option>`).join('');
+  if (users.length) userSel.value = users[0];
 
   const metricSel = $('pivot-metric-select');
   metricSel.innerHTML = metrics.map(m => `<option value="${escHtml(m)}">${escHtml(m)}</option>`).join('');
+  if (metrics.length) metricSel.value = metrics[0];
 }
 
 export function renderPivotTable(structure, pivotConfig, user, metric) {
