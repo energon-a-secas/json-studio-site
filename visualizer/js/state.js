@@ -7,6 +7,9 @@ export const state = {
   structure:         null,   // { mode, groups, columns }
   pivotConfig:       null,   // { identifierField, pivotField, periodKeys, metrics } | null
   pivotActive:       false,
+  treeActive:        false,  // true = org tree mode active
+  treeData:          null,   // { roots, children, byId, idField } | null
+  treeHierarchy:     null,   // { idField, refField } | null
   nestedModalState:  null,   // { matchingRows, isObjOfObjs, sortedPeriods, metricList }
   sortCol:           null,   // column name, or null for natural order
   sortDir:           'asc',  // 'asc' | 'desc'
@@ -59,16 +62,21 @@ export function resetViewerState() {
   state.colFilters = {};
   state.sparklinesEnabled = false;
   state.pivotActive = false;
+  state.treeActive = false;
+  state.treeData = null;
+  state.treeHierarchy = null;
   state.timelineMode = false;
   state.periodReversed = false;
   state.pivotConfig = null;
   $('btn-heat').classList.remove('active');
   $('btn-sparklines').classList.remove('active');
   $('btn-chart-toggle').classList.remove('active');
+  $('btn-tree')?.classList.remove('active');
   $('btn-period-order').classList.add('hidden-el');
   $('pivot-toolbar').classList.add('hidden-el');
   $('pivot-table').classList.add('hidden-el');
   $('timeline-area').classList.add('hidden-el');
+  $('tree-area')?.classList.add('hidden-el');
   $('data-table').classList.remove('hidden-el');
   $('search-bar').style.display = '';
 }

@@ -8,6 +8,7 @@ import { rerender, applyHeatMap, clearHeatMap } from './table.js';
 import {
   activatePivotMode, deactivatePivotMode, refreshPivot
 } from './pivot.js';
+import { activateTreeMode, deactivateTreeMode } from './tree.js';
 import { exportCSV } from './export.js';
 import {
   openNestedModal, openRecordModal, closeModal, renderNestedContent
@@ -194,9 +195,16 @@ export function initEvents() {
 
   // Pivot toggle
   $('btn-pivot').addEventListener('click', () => {
+    if (state.treeActive) deactivateTreeMode();
     if (state.pivotActive) deactivatePivotMode(); else activatePivotMode();
   });
   $('btn-exit-pivot').addEventListener('click', deactivatePivotMode);
+
+  // Tree toggle
+  $('btn-tree').addEventListener('click', () => {
+    if (state.pivotActive) deactivatePivotMode();
+    if (state.treeActive) deactivateTreeMode(); else activateTreeMode();
+  });
 
   // Pivot selectors
   $('pivot-user-select').addEventListener('change', refreshPivot);

@@ -768,6 +768,110 @@ thead th.sort-desc .sort-icon { opacity: 1; color: var(--accent); }
 }
 .skip-link:focus { top: 0; }
 
+/* ── Tree View ── */
+.btn-tree-toggle {
+  background: rgba(255,255,255,0.07);
+  color: var(--text-secondary); border: 1px solid var(--border);
+  border-radius: 7px; padding: 5px 14px; font-size: 0.82rem;
+  font-family: var(--font); font-weight: 500; cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+.btn-tree-toggle:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
+.btn-tree-toggle.active {
+  background: rgba(124,58,237,0.15); color: #a78bfa;
+  border-color: rgba(124,58,237,0.35);
+}
+
+.tree-area {
+  padding: 20px 24px 24px;
+  overflow-y: auto;
+}
+
+.tree-header {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 20px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.tree-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 1rem; font-weight: 600; letter-spacing: 0.3px;
+  color: var(--text-primary);
+}
+.tree-title svg { color: #a78bfa; width: 16px; height: 16px; }
+.tree-meta {
+  font-size: 0.78rem; color: var(--text-muted);
+  margin-right: auto;
+}
+
+.tree-container {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px 0;
+  font-family: var(--font);
+}
+
+.tree-node {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 16px 6px 0;
+  position: relative;
+  transition: background var(--dur-fast);
+}
+.tree-node:hover { background: rgba(255,255,255,0.03); }
+
+.tree-toggle {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); padding: 3px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; flex-shrink: 0;
+  width: 18px; height: 18px;
+  transition: color var(--dur-fast), background var(--dur-fast), transform var(--dur);
+}
+.tree-toggle:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+.tree-toggle.collapsed { transform: rotate(-90deg); }
+
+.tree-spacer {
+  width: 18px; height: 18px; flex-shrink: 0;
+}
+
+.tree-label {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-secondary); font-size: 0.875rem; font-weight: 500;
+  text-align: left; padding: 2px 6px; border-radius: 5px;
+  transition: color var(--dur-fast), background var(--dur-fast);
+  display: flex; align-items: center; gap: 6px;
+}
+.tree-label:hover { color: var(--text-primary); background: rgba(255,255,255,0.06); }
+
+.tree-count {
+  background: rgba(167,139,250,0.15);
+  color: #a78bfa; border: 1px solid rgba(167,139,250,0.25);
+  font-size: 0.7rem; font-weight: 600;
+  padding: 1px 6px; border-radius: 10px;
+  line-height: 1;
+}
+
+.tree-children.collapsed {
+  display: none;
+}
+
+.tree-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 24px; text-align: center;
+  color: var(--text-muted);
+}
+.tree-empty svg {
+  margin-bottom: 16px; color: rgba(255,255,255,0.2);
+}
+.tree-empty > div:first-of-type {
+  font-size: 1.05rem; font-weight: 600; color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.tree-empty-hint {
+  font-size: 0.85rem; color: var(--text-muted);
+  max-width: 400px;
+}
+
 /* ── Button press feedback ────────────────────────────────────── */
 button:active, .btn:active {
   transform: scale(0.97);
