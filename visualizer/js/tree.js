@@ -197,6 +197,9 @@ export function activateTreeMode() {
     $('stats-sidebar').classList.add('hidden-el');
     $('filter-bar').classList.add('hidden-el');
 
+    // Enable tree scrolling mode
+    $('table-area').classList.add('tree-mode');
+
     // Switch toolbar to tree mode
     $('toolbar-search-table')?.classList.add('hidden-el');
     $('toolbar-search-tree')?.classList.remove('hidden-el');
@@ -224,6 +227,9 @@ export function activateTreeMode() {
     $('data-table').classList.add('hidden-el');
     $('stats-sidebar').classList.add('hidden-el');
     $('filter-bar').classList.add('hidden-el');
+
+    // Enable tree scrolling mode
+    $('table-area').classList.add('tree-mode');
 
     // Switch toolbar to tree mode
     $('toolbar-search-table')?.classList.add('hidden-el');
@@ -253,6 +259,9 @@ export function activateTreeMode() {
     $('data-table').classList.add('hidden-el');
     $('stats-sidebar').classList.add('hidden-el');
     $('filter-bar').classList.add('hidden-el');
+
+    // Enable tree scrolling mode
+    $('table-area').classList.add('tree-mode');
 
     // Switch toolbar to tree mode
     $('toolbar-search-table')?.classList.add('hidden-el');
@@ -297,6 +306,9 @@ export function activateTreeMode() {
   $('stats-sidebar').classList.add('hidden-el');
   $('filter-bar').classList.add('hidden-el');
 
+  // Enable tree scrolling mode
+  $('table-area').classList.add('tree-mode');
+
   // Switch toolbar to tree mode
   $('toolbar-search-table')?.classList.add('hidden-el');
   $('toolbar-search-tree')?.classList.remove('hidden-el');
@@ -318,6 +330,9 @@ export function deactivateTreeMode() {
   $('tree-area').classList.add('hidden-el');
   $('data-table').classList.remove('hidden-el');
   $('stats-sidebar').classList.remove('hidden-el');
+
+  // Disable tree scrolling mode
+  $('table-area').classList.remove('tree-mode');
 
   // Switch toolbar back to table mode
   $('toolbar-search-table')?.classList.remove('hidden-el');

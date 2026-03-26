@@ -338,7 +338,17 @@ body {
 /* ── Main layout ── */
 .viewer-body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
 
-.table-area { flex: 1; overflow: auto; }
+.table-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  min-height: 0;
+}
+
+.table-area.tree-mode {
+  overflow: hidden;
+}
 
 /* ── Table ── */
 table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
@@ -943,7 +953,6 @@ thead th.sort-desc .sort-icon { opacity: 1; color: var(--accent); }
 
 .tree-area {
   padding: 20px 24px 24px;
-  overflow: hidden;
   flex: 1;
   min-height: 0;
   display: flex;
