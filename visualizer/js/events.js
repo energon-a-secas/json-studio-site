@@ -16,7 +16,7 @@ import {
 import { loadJSON } from './load.js';
 import {
   applyFilter, buildFilterBar, updateFilterBadge,
-  applyColFilters, buildColsDropdown
+  applyColFilters, buildColsDropdown, buildFilterDropdown
 } from './filter.js';
 
 // Re-export for use by other modules (table.js rerender, load.js, pivot.js)
@@ -144,9 +144,25 @@ export function initEvents() {
     }
   });
 
+  // Filters dropdown
+  $('btn-filters').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dropdown = $('filter-dropdown');
+    if (dropdown.classList.contains('hidden-el')) {
+      buildFilterDropdown();
+      dropdown.classList.remove('hidden-el');
+    } else {
+      dropdown.classList.add('hidden-el');
+    }
+  });
+
+  // Close dropdowns when clicking outside
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.cols-dropdown-wrap')) {
       $('cols-dropdown').classList.add('hidden-el');
+    }
+    if (!e.target.closest('.filter-dropdown-wrap')) {
+      $('filter-dropdown').classList.add('hidden-el');
     }
   });
 
@@ -171,6 +187,7 @@ export function initEvents() {
     applyColFilters();
     updateFilterBadge();
     if (state.heatMapEnabled) applyHeatMap();
+    if (state.treeActive) activateTreeMode();
   });
 
   // Filter bar chip clicks
@@ -183,6 +200,7 @@ export function initEvents() {
       else state.colFilters[col].add(val);
       buildFilterBar(); applyColFilters(); updateFilterBadge();
       if (state.heatMapEnabled) applyHeatMap();
+      if (state.treeActive) activateTreeMode();
       return;
     }
     const clrBtn = e.target.closest('[data-clear-col]');
@@ -190,7 +208,51 @@ export function initEvents() {
       delete state.colFilters[clrBtn.dataset.clearCol];
       buildFilterBar(); applyColFilters(); updateFilterBadge();
       if (state.heatMapEnabled) applyHeatMap();
+      if (state.treeActive) activateTreeMode();
     }
+  });
+
+  // Filter dropdown chip clicks
+  $('filter-dropdown').addEventListener('click', (e) => {
+    const chip = e.target.closest('.filter-chip');
+    if (chip) {
+      const { col, val } = chip.dataset;
+      if (!state.colFilters[col]) state.colFilters[col] = new Set();
+      if (state.colFilters[col].has(val)) state.colFilters[col].delete(val);
+      else state.colFilters[col].add(val);
+      buildFilterDropdown(); applyColFilters(); updateFilterBadge();
+      if (state.heatMapEnabled) applyHeatMap();
+      if (state.treeActive) activateTreeMode();
+      return;
+    }
+    const clrBtn = e.target.closest('[data-clear-col]');
+    if (clrBtn) {
+      delete state.colFilters[clrBtn.dataset.clearCol];
+      buildFilterDropdown(); applyColFilters(); updateFilterBadge();
+      if (state.heatMapEnabled) applyHeatMap();
+      if (state.treeActive) activateTreeMode();
+    }
+  });
+
+  // Reset button - clear everything and go back to input
+  $('btn-reset').addEventListener('click', () => {
+    resetViewerState();
+    $('view-viewer').classList.remove('active');
+    $('view-input').style.display = '';
+    $('btn-new-json').classList.add('hidden-el');
+    $('btn-collapse-all').classList.add('hidden-el');
+    $('btn-export-csv').classList.add('hidden-el');
+    $('btn-sparklines').classList.add('hidden-el');
+    $('btn-heat').classList.add('hidden-el');
+    $('btn-columns').classList.add('hidden-el');
+    $('btn-filters').classList.add('hidden-el');
+    $('btn-reset').classList.add('hidden-el');
+    $('btn-pivot').classList.remove('active');
+    $('btn-tree').classList.remove('active');
+    $('filter-bar').classList.add('hidden-el');
+    $('json-input').value = '';
+    $('error-msg').classList.remove('visible');
+    try { sessionStorage.removeItem('viewer-session-json'); } catch (e) {}
   });
 
   // Pivot toggle
@@ -204,6 +266,29 @@ export function initEvents() {
   $('btn-tree').addEventListener('click', () => {
     if (state.pivotActive) deactivatePivotMode();
     if (state.treeActive) deactivateTreeMode(); else activateTreeMode();
+  });
+
+  // Tree toolbar buttons (in main search-bar when tree is active)
+  $('btn-exit-tree').addEventListener('click', deactivateTreeMode);
+
+  $('btn-tree-collapse-all').addEventListener('click', () => {
+    const containers = document.querySelectorAll('.tree-children');
+    const toggles = document.querySelectorAll('.tree-toggle');
+    containers.forEach(c => c.classList.add('collapsed'));
+    toggles.forEach(t => {
+      t.setAttribute('aria-expanded', 'false');
+      t.classList.add('collapsed');
+    });
+  });
+
+  $('btn-tree-expand-all').addEventListener('click', () => {
+    const containers = document.querySelectorAll('.tree-children');
+    const toggles = document.querySelectorAll('.tree-toggle');
+    containers.forEach(c => c.classList.remove('collapsed'));
+    toggles.forEach(t => {
+      t.setAttribute('aria-expanded', 'true');
+      t.classList.remove('collapsed');
+    });
   });
 
   // Pivot selectors

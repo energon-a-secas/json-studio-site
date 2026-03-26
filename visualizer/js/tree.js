@@ -3,6 +3,7 @@
 // ─────────────────────────────────────────────────────────────
 import { $, escHtml, fmt } from './utils.js';
 import { state } from './state.js';
+import { buildFilterBar } from './filter.js';
 
 // ─────────────────────────────────────────────────────────────
 // Auto-detect hierarchical relationships
@@ -165,8 +166,48 @@ function renderNode(record, treeData, depth = 0, path = new Set()) {
 // Activate tree mode
 // ─────────────────────────────────────────────────────────────
 export function activateTreeMode() {
-  const records = state.structure?.groups?.flatMap(g => g.rows) || [];
-  if (!records || records.length === 0) return;
+  const allRecords = state.structure?.groups?.flatMap(g => g.rows) || [];
+  if (!allRecords || allRecords.length === 0) return;
+
+  // Apply column filters (same as table view)
+  const hasFilters = Object.values(state.colFilters).some(s => s.size > 0);
+  let records = allRecords;
+
+  if (hasFilters) {
+    records = allRecords.filter(row => {
+      for (const [col, vals] of Object.entries(state.colFilters)) {
+        if (vals.size === 0) continue;
+        if (!vals.has(String(row[col] ?? ''))) return false;
+      }
+      return true;
+    });
+  }
+
+  if (records.length === 0) {
+    const treeArea = $('tree-area');
+    treeArea.innerHTML = `<div class="tree-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <div>No records match the current filters</div>
+      <div class="tree-empty-hint">Clear filters to see all records.</div>
+    </div>`;
+    treeArea.classList.remove('hidden-el');
+    $('data-table').classList.add('hidden-el');
+    $('stats-sidebar').classList.add('hidden-el');
+    $('filter-bar').classList.add('hidden-el');
+
+    // Switch toolbar to tree mode
+    $('toolbar-search-table')?.classList.add('hidden-el');
+    $('toolbar-search-tree')?.classList.remove('hidden-el');
+    $('toolbar-viz')?.classList.add('hidden-el');
+    $('toolbar-table')?.classList.add('hidden-el');
+    $('toolbar-tree-actions')?.classList.remove('hidden-el');
+
+    state.treeActive = true;
+    $('btn-tree').classList.add('active');
+    return;
+  }
 
   // Detect hierarchy
   const hierarchy = detectHierarchy(records);
@@ -182,7 +223,17 @@ export function activateTreeMode() {
     treeArea.classList.remove('hidden-el');
     $('data-table').classList.add('hidden-el');
     $('stats-sidebar').classList.add('hidden-el');
-    $('search-bar').style.display = 'none';
+    $('filter-bar').classList.add('hidden-el');
+
+    // Switch toolbar to tree mode
+    $('toolbar-search-table')?.classList.add('hidden-el');
+    $('toolbar-search-tree')?.classList.remove('hidden-el');
+    $('toolbar-viz')?.classList.add('hidden-el');
+    $('toolbar-table')?.classList.add('hidden-el');
+    $('toolbar-tree-actions')?.classList.remove('hidden-el');
+
+    state.treeActive = true;
+    $('btn-tree').classList.add('active');
     return;
   }
 
@@ -201,7 +252,17 @@ export function activateTreeMode() {
     treeArea.classList.remove('hidden-el');
     $('data-table').classList.add('hidden-el');
     $('stats-sidebar').classList.add('hidden-el');
-    $('search-bar').style.display = 'none';
+    $('filter-bar').classList.add('hidden-el');
+
+    // Switch toolbar to tree mode
+    $('toolbar-search-table')?.classList.add('hidden-el');
+    $('toolbar-search-tree')?.classList.remove('hidden-el');
+    $('toolbar-viz')?.classList.add('hidden-el');
+    $('toolbar-table')?.classList.add('hidden-el');
+    $('toolbar-tree-actions')?.classList.remove('hidden-el');
+
+    state.treeActive = true;
+    $('btn-tree').classList.add('active');
     return;
   }
 
@@ -209,7 +270,8 @@ export function activateTreeMode() {
   state.treeData = treeData;
   state.treeHierarchy = hierarchy;
 
-  // Render tree
+  // Render tree (only title and metadata, controls moved to main toolbar)
+  const filterInfo = hasFilters ? ` (${records.length} of ${allRecords.length} after filters)` : '';
   let html = `<div class="tree-header">
     <div class="tree-title">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -217,9 +279,7 @@ export function activateTreeMode() {
       </svg>
       Organization Tree
     </div>
-    <div class="tree-meta">${treeData.roots.length} root${treeData.roots.length !== 1 ? 's' : ''} · ${records.length} total · by ${escHtml(hierarchy.refField)} → ${escHtml(hierarchy.idField)}</div>
-    <button class="btn btn-ghost btn-sm" id="btn-tree-collapse-all">Collapse All</button>
-    <button class="btn btn-ghost btn-sm" id="btn-tree-expand-all">Expand All</button>
+    <div class="tree-meta">${treeData.roots.length} root${treeData.roots.length !== 1 ? 's' : ''} · ${records.length} records${filterInfo} · by ${escHtml(hierarchy.refField)} → ${escHtml(hierarchy.idField)}</div>
   </div>`;
 
   html += `<div class="tree-container">`;
@@ -235,7 +295,14 @@ export function activateTreeMode() {
   // Hide table and stats
   $('data-table').classList.add('hidden-el');
   $('stats-sidebar').classList.add('hidden-el');
-  $('search-bar').style.display = 'none';
+  $('filter-bar').classList.add('hidden-el');
+
+  // Switch toolbar to tree mode
+  $('toolbar-search-table')?.classList.add('hidden-el');
+  $('toolbar-search-tree')?.classList.remove('hidden-el');
+  $('toolbar-viz')?.classList.add('hidden-el');
+  $('toolbar-table')?.classList.add('hidden-el');
+  $('toolbar-tree-actions')?.classList.remove('hidden-el');
 
   // Wire up tree event handlers
   attachTreeEvents();
@@ -251,12 +318,22 @@ export function deactivateTreeMode() {
   $('tree-area').classList.add('hidden-el');
   $('data-table').classList.remove('hidden-el');
   $('stats-sidebar').classList.remove('hidden-el');
-  $('search-bar').style.display = '';
+
+  // Switch toolbar back to table mode
+  $('toolbar-search-table')?.classList.remove('hidden-el');
+  $('toolbar-search-tree')?.classList.add('hidden-el');
+  $('toolbar-viz')?.classList.remove('hidden-el');
+  $('toolbar-table')?.classList.remove('hidden-el');
+  $('toolbar-tree-actions')?.classList.add('hidden-el');
+
   $('btn-tree').classList.remove('active');
 
   state.treeActive = false;
   state.treeData = null;
   state.treeHierarchy = null;
+
+  // Rebuild filter bar to show it again (if applicable)
+  buildFilterBar();
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -299,9 +376,70 @@ function openRecordModalFromData(record) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Filter tree nodes by search term
+// ─────────────────────────────────────────────────────────────
+function filterTreeNodes(searchTerm) {
+  const allRecords = state.structure?.groups?.flatMap(g => g.rows) || [];
+  const term = searchTerm.toLowerCase().trim();
+
+  // If no search term, show all nodes
+  if (!term) {
+    document.querySelectorAll('.tree-node, .tree-children').forEach(el => {
+      el.classList.remove('tree-hidden', 'tree-match');
+    });
+    return;
+  }
+
+  // Find matching record indices
+  const matchingIndices = new Set();
+  allRecords.forEach((record, idx) => {
+    const values = Object.values(record).map(v => String(v || '').toLowerCase());
+    if (values.some(v => v.includes(term))) {
+      matchingIndices.add(idx);
+    }
+  });
+
+  // Show/hide nodes based on matches
+  document.querySelectorAll('.tree-node').forEach(node => {
+    const label = node.querySelector('.tree-label[data-record-idx]');
+    if (label) {
+      const idx = parseInt(label.dataset.recordIdx, 10);
+      if (matchingIndices.has(idx)) {
+        node.classList.remove('tree-hidden');
+        node.classList.add('tree-match');
+      } else {
+        node.classList.add('tree-hidden');
+        node.classList.remove('tree-match');
+      }
+    }
+  });
+
+  // Auto-expand all to show matches
+  if (term) {
+    document.querySelectorAll('.tree-children').forEach(c => c.classList.remove('collapsed'));
+    document.querySelectorAll('.tree-toggle').forEach(t => {
+      t.setAttribute('aria-expanded', 'true');
+      t.classList.remove('collapsed');
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 // Attach event handlers to tree elements
 // ─────────────────────────────────────────────────────────────
 function attachTreeEvents() {
+  // Tree search (now in main toolbar)
+  const searchInput = document.getElementById('tree-search-input');
+  if (searchInput) {
+    let searchTimer = null;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        filterTreeNodes(e.target.value);
+      }, 150);
+    });
+  }
+
   // Toggle expand/collapse
   const toggles = document.querySelectorAll('.tree-toggle');
   toggles.forEach(btn => {
@@ -333,32 +471,4 @@ function attachTreeEvents() {
       }
     });
   });
-
-  // Collapse all button
-  const collapseAllBtn = document.getElementById('btn-tree-collapse-all');
-  if (collapseAllBtn) {
-    collapseAllBtn.addEventListener('click', () => {
-      const containers = document.querySelectorAll('.tree-children');
-      const toggles = document.querySelectorAll('.tree-toggle');
-      containers.forEach(c => c.classList.add('collapsed'));
-      toggles.forEach(t => {
-        t.setAttribute('aria-expanded', 'false');
-        t.classList.add('collapsed');
-      });
-    });
-  }
-
-  // Expand all button
-  const expandAllBtn = document.getElementById('btn-tree-expand-all');
-  if (expandAllBtn) {
-    expandAllBtn.addEventListener('click', () => {
-      const containers = document.querySelectorAll('.tree-children');
-      const toggles = document.querySelectorAll('.tree-toggle');
-      containers.forEach(c => c.classList.remove('collapsed'));
-      toggles.forEach(t => {
-        t.setAttribute('aria-expanded', 'true');
-        t.classList.remove('collapsed');
-      });
-    });
-  }
 }

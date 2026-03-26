@@ -235,6 +235,10 @@ export function renderTable(structure) {
             td.innerHTML = `<div class="spark-wrap"><span>${escHtml(raw)}</span><div class="spark-track"><div class="spark-fill" style="width:${pct}%"></div></div></div>`;
           } else {
             td.textContent = raw;
+            // Add title for tooltip if text is long enough to be truncated
+            if (raw.length > 30) {
+              td.title = raw;
+            }
           }
         }
         tr.appendChild(td);

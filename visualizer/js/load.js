@@ -84,7 +84,9 @@ export function loadJSON(text) {
   $('btn-sparklines').classList.remove('hidden-el');
   $('btn-heat').classList.remove('hidden-el');
   $('btn-columns').classList.remove('hidden-el');
+  $('btn-filters').classList.remove('hidden-el');
   $('btn-tree').classList.remove('hidden-el');
+  $('btn-reset').classList.remove('hidden-el');
 
   // Apply pending URL state then save JSON to session
   if (state.pendingState) { applyViewState(state.pendingState); state.pendingState = null; }

@@ -148,6 +148,13 @@ export function updateFilterBadge() {
 export function buildFilterBar() {
   const bar = $('filter-bar');
   if (!state.structure) return;
+
+  // Hide filter bar if in tree or pivot mode
+  if (state.treeActive || state.pivotActive) {
+    bar.classList.add('hidden-el');
+    return;
+  }
+
   const { columns, groups } = state.structure;
   const strCols = columns.filter(c => c.type === 'string' && !state.hiddenCols.has(c.name));
   if (strCols.length === 0) { bar.classList.add('hidden-el'); return; }
@@ -184,6 +191,52 @@ export function buildFilterBar() {
 
   const hasGroups = bar.querySelectorAll('.filter-group').length > 0;
   bar.classList.toggle('hidden-el', !hasGroups);
+}
+
+export function buildFilterDropdown() {
+  const dropdown = $('filter-dropdown');
+  if (!state.structure) return;
+  const { columns, groups } = state.structure;
+  const strCols = columns.filter(c => c.type === 'string' && !state.hiddenCols.has(c.name));
+
+  dropdown.innerHTML = '';
+
+  for (const col of strCols) {
+    const values = [...new Set(groups.flatMap(g => g.rows).map(r => String(r[col.name] ?? '')).filter(Boolean))].sort();
+    if (values.length < 2 || values.length > 20) continue;
+
+    const active = state.colFilters[col.name] || new Set();
+    const group = document.createElement('div');
+    group.className = 'filter-group';
+
+    const groupHeader = document.createElement('div');
+    groupHeader.innerHTML = `<span class="filter-group-name">${escHtml(col.name)}</span>`;
+    group.appendChild(groupHeader);
+
+    const chipsWrap = document.createElement('div');
+    chipsWrap.className = 'filter-chips-wrap';
+
+    for (const val of values) {
+      const chip = document.createElement('span');
+      chip.className = 'filter-chip' + (active.has(val) ? ' active' : '');
+      chip.textContent = val;
+      chip.dataset.col = col.name;
+      chip.dataset.val = val;
+      chipsWrap.appendChild(chip);
+    }
+
+    group.appendChild(chipsWrap);
+
+    if (active.size > 0) {
+      const clr = document.createElement('span');
+      clr.className = 'filter-clear';
+      clr.textContent = `\u2715 Clear ${col.name}`;
+      clr.dataset.clearCol = col.name;
+      group.appendChild(clr);
+    }
+
+    dropdown.appendChild(group);
+  }
 }
 
 export function applyColFilters() {
