@@ -79,7 +79,6 @@ export function loadJSON(text) {
   $('view-input').style.display = 'none';
   $('view-viewer').classList.add('active');
   $('btn-new-json').classList.remove('hidden-el');
-  $('btn-collapse-all').classList.remove('hidden-el');
   $('btn-export-csv').classList.remove('hidden-el');
   $('btn-sparklines').classList.remove('hidden-el');
   $('btn-heat').classList.remove('hidden-el');

@@ -56,7 +56,6 @@ export function initEvents() {
     $('view-viewer').classList.remove('active');
     $('view-input').style.display = '';
     $('btn-new-json').classList.add('hidden-el');
-    $('btn-collapse-all').classList.add('hidden-el');
     $('btn-export-csv').classList.add('hidden-el');
     $('btn-sparklines').classList.add('hidden-el');
     $('btn-heat').classList.add('hidden-el');
@@ -116,18 +115,7 @@ export function initEvents() {
     applyFilter(input.value);
   });
 
-  // Collapse All / Expand All
-  let _allCollapsed = false;
-  $('btn-collapse-all').addEventListener('click', () => {
-    _allCollapsed = !_allCollapsed;
-    $('btn-collapse-all').textContent = _allCollapsed ? 'Expand All' : 'Collapse All';
-    const tbody = $('table-body');
-    for (const groupRow of tbody.querySelectorAll('.row-group')) {
-      const isCollapsed = groupRow.classList.contains('collapsed');
-      if (_allCollapsed && !isCollapsed) groupRow.click();
-      if (!_allCollapsed && isCollapsed)  groupRow.click();
-    }
-  });
+  // Note: Group collapse functionality removed - groups can be collapsed individually by clicking them
 
   // CSV Export
   $('btn-export-csv').addEventListener('click', () => exportCSV());

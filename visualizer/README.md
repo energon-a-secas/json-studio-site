@@ -60,6 +60,18 @@ Dismiss with the × button, a click outside the modal, or Escape.
 - Drag and drop a `.json` file onto the textarea.
 - Use the "Upload File" button to pick a file.
 
+## Security & Data Privacy
+
+**Everything happens locally in your browser. Zero data submission.**
+
+- ✅ No network requests — your JSON never leaves your machine
+- ✅ No analytics or tracking — no Google Analytics, no third-party scripts
+- ✅ No cookies — no tracking identifiers
+- ✅ Content Security Policy enforced — blocks external scripts
+- ✅ Local storage only — uses `sessionStorage` (cleared when tab closes) to persist data across page refreshes within the same session
+
+**Safe for sensitive/confidential data.** GDPR/CCPA compliant (no data collection). Can be used offline once the page is loaded.
+
 ## Column type inference
 
 The visualizer infers each column's type at load time:
@@ -83,4 +95,3 @@ The indicator is triggered when a column name (case-insensitive) contains the wo
 - **Search matches raw string values only.** Numeric values are matched as strings (e.g. searching `"78"` matches a cell with value `78`), but the search does not support numeric range queries.
 - **Row identity in the modal is based on string column values.** Two rows are considered the same record if every string-type column has an identical value. If all columns are numeric there is no string key to match on, so the modal will surface every row from every group.
 - **No pagination.** Very large datasets (thousands of rows) may make the browser sluggish.
-- **Local only.** No data leaves the browser; everything runs client-side.
