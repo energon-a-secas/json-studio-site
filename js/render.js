@@ -44,6 +44,7 @@ export function renderNode(node, parentId, isRoot) {
     const h = document.createElement('span');
     h.className = 'drag-handle';
     h.textContent = '\u283F';
+    h.setAttribute('aria-hidden', 'true');
     h.draggable = true;
     h.addEventListener('dragstart', e => {
       state.drag = { source: 'canvas', nodeId: node.id };
@@ -59,6 +60,8 @@ export function renderNode(node, parentId, isRoot) {
     const cb = document.createElement('button');
     cb.className = 'collapse-btn';
     cb.textContent = node.collapsed ? '\u25B6' : '\u25BC';
+    cb.setAttribute('aria-label', node.collapsed ? 'Expand' : 'Collapse');
+    cb.setAttribute('aria-expanded', String(!node.collapsed));
     cb.addEventListener('click', () => { node.collapsed = !node.collapsed; render(); });
     block.appendChild(cb);
   }
@@ -146,6 +149,7 @@ export function renderNode(node, parentId, isRoot) {
     del.className   = 'delete-btn';
     del.textContent = '\u00D7';
     del.title       = 'Delete';
+    del.setAttribute('aria-label', 'Delete ' + (node.key ? node.key + ' ' : '') + node.type);
     del.addEventListener('click', () => { removeNode(node.id); render(); });
     block.appendChild(del);
   }

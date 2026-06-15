@@ -105,7 +105,7 @@ body {
   font-size: 0.72em;
   text-transform: uppercase;
   letter-spacing: 1.8px;
-  color: #555;
+  color: var(--text-muted);
   margin-bottom: 14px;
   padding: 0 4px;
   font-weight: 600;
@@ -155,7 +155,7 @@ body {
   font-size: 0.72em;
   text-transform: uppercase;
   letter-spacing: 1.8px;
-  color: #555;
+  color: var(--text-muted);
   font-weight: 600;
   margin-right: 4px;
 }
@@ -431,12 +431,12 @@ body {
 .c-null    { background: #6b7280; }
 
 /* ── Left border accent ── */
-.lb-object  { border-left: 2px solid rgba(0,99,229,0.4) !important; }
-.lb-array   { border-left: 2px solid rgba(124,58,237,0.4) !important; }
-.lb-string  { border-left: 2px solid rgba(16,185,129,0.35) !important; }
-.lb-number  { border-left: 2px solid rgba(245,158,11,0.35) !important; }
-.lb-boolean { border-left: 2px solid rgba(236,72,153,0.35) !important; }
-.lb-null    { border-left: 2px solid rgba(107,114,128,0.3) !important; }
+.lb-object  { border-left: 1px solid rgba(0,99,229,0.4) !important; }
+.lb-array   { border-left: 1px solid rgba(124,58,237,0.4) !important; }
+.lb-string  { border-left: 1px solid rgba(16,185,129,0.35) !important; }
+.lb-number  { border-left: 1px solid rgba(245,158,11,0.35) !important; }
+.lb-boolean { border-left: 1px solid rgba(236,72,153,0.35) !important; }
+.lb-null    { border-left: 1px solid rgba(107,114,128,0.3) !important; }
 
 /* ── JSON Panel ── */
 .json-panel {
@@ -453,7 +453,7 @@ body {
 }
 .json-panel-title {
   font-size: 0.72em; text-transform: uppercase;
-  letter-spacing: 1.8px; color: #555; font-weight: 600;
+  letter-spacing: 1.8px; color: var(--text-muted); font-weight: 600;
 }
 .json-actions { display: flex; gap: 6px; }
 .json-output { flex: 1; overflow-y: auto; padding: 16px 20px; }
