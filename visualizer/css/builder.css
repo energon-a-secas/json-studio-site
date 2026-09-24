@@ -1,0 +1,147 @@
+/* Embed builder: a documentation page, so it scrolls and reads like one rather
+   than filling the viewport the way the Visualizer does. Tokens and buttons
+   come from style.css. */
+
+.builder-body {
+  height: auto;
+  min-height: 100dvh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.builder {
+  flex: 1;
+  width: min(1160px, 100%);
+  margin: 0 auto;
+  padding: 32px 20px 40px;
+  display: grid;
+  gap: 28px;
+}
+
+.builder-intro h2 { margin: 0 0 8px; font-size: 1.5rem; font-weight: 700; }
+.builder-intro p { margin: 0; max-width: 72ch; color: var(--text-secondary); line-height: 1.65; }
+.builder code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.07);
+}
+
+.builder-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .builder-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.builder-form { display: grid; gap: 18px; }
+.builder-form fieldset {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+  background: var(--surface-1);
+}
+.builder-form legend {
+  padding: 0 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.fld { display: grid; gap: 5px; font-size: 0.82rem; color: var(--text-secondary); }
+.fld input[type="text"], .fld input[type="number"], .fld select, .fld textarea {
+  font: inherit;
+  font-size: 0.86rem;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text-primary);
+  width: 100%;
+}
+.fld textarea { font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.5; resize: vertical; }
+.fld input:focus, .fld select:focus, .fld textarea:focus { outline: none; border-color: var(--accent); }
+.fld select option { background: #0d0a1a; }
+.fld--check { grid-template-columns: auto 1fr; align-items: center; gap: 8px; }
+.fld--check input { margin: 0; }
+.fld-note { margin: 0; font-size: 0.76rem; color: var(--text-muted); line-height: 1.55; }
+.fld-error { color: #f87171; }
+.fld-error:empty { display: none; }
+
+.builder-h3 {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.builder-preview { display: grid; gap: 8px; min-width: 0; }
+.preview-frame {
+  width: 100%;
+  height: 480px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  margin-bottom: 16px;
+}
+.snippet {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.35);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  overflow: auto;
+  max-height: 420px;
+  white-space: pre;
+}
+.builder-preview .btn { justify-self: start; }
+
+.builder-api { display: grid; gap: 12px; }
+.builder-api > p { margin: 0; max-width: 78ch; color: var(--text-secondary); line-height: 1.65; }
+.api-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.api-buttons .btn[disabled] { opacity: 0.45; cursor: default; }
+.event-log {
+  margin: 0;
+  min-height: 5.5em;
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.3);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  overflow: auto;
+  white-space: pre;
+}
+.api-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--active-color);
+  font-size: 0.9rem;
+}
+.api-details h4 { margin: 18px 0 6px; font-size: 0.9rem; font-weight: 700; }
+.api-details p { margin: 0; max-width: 78ch; color: var(--text-secondary); line-height: 1.65; }
+.api-table { border-collapse: collapse; width: 100%; max-width: 900px; font-size: 0.84rem; }
+.api-table th, .api-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.api-table th { font-family: var(--font-mono); font-weight: 600; white-space: nowrap; color: var(--text-primary); width: 1%; }
+.api-table td { color: var(--text-secondary); line-height: 1.5; }

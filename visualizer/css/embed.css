@@ -1,0 +1,86 @@
+/* Embed shell. Tokens and every viewer rule come from style.css; this file is
+   only the frame around them, because an embed lives inside someone else's
+   layout and must fill whatever box the host gives it. */
+
+.embed-body { height: 100dvh; overflow: hidden; }
+
+.embed-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.embed-shell #view-viewer.active { flex: 1; }
+
+.embed-caption {
+  flex-shrink: 0;
+  padding: 9px 14px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.embed-caption[hidden] { display: none; }
+
+.embed-shell .error-msg { margin: 8px 14px 0; }
+
+.embed-empty {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.embed-empty[hidden] { display: none; }
+.embed-empty p { margin: 0; max-width: 46ch; }
+.embed-empty-direct { display: none; }
+.embed-empty.is-direct .embed-empty-framed { display: none; }
+.embed-empty.is-direct .embed-empty-direct { display: block; }
+.embed-empty a { color: var(--active-color); }
+.embed-empty code { font-family: var(--font-mono); font-size: 0.85em; }
+
+.embed-foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 14px;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--surface-1);
+  border-top: 1px solid var(--border-subtle);
+}
+.embed-mark { color: var(--text-muted); text-decoration: none; font-weight: 600; }
+.embed-mark:hover { color: var(--accent-bright); }
+
+/* The host's box is usually smaller than a browser tab. */
+.embed-shell .search-bar { padding: 8px 14px; gap: 10px; flex-wrap: wrap; }
+.embed-shell .pivot-toolbar { padding: 8px 14px; gap: 10px; flex-wrap: wrap; }
+.embed-shell .stats-sidebar { width: 240px; padding: 12px; }
+@media (max-width: 640px) {
+  .embed-shell .stats-sidebar { display: none; }
+}
+
+/* URL switches, set on <html> by embed.js */
+html[data-toolbar="off"] .search-bar,
+html[data-toolbar="off"] .pivot-toolbar { display: none !important; }
+html[data-stats="off"] .stats-sidebar { display: none !important; }
+
+/* fit=content: no scrolling inside the frame; it grows with the data and
+   reports its height so the host can size the iframe to it. */
+html[data-fit="content"] .embed-body { height: auto; overflow: visible; }
+html[data-fit="content"] .embed-shell { height: auto; }
+html[data-fit="content"] #view-viewer,
+html[data-fit="content"] .viewer-body,
+html[data-fit="content"] .table-area,
+html[data-fit="content"] .table-area.tree-mode,
+html[data-fit="content"] .stats-sidebar,
+html[data-fit="content"] .timeline-area,
+html[data-fit="content"] .tree-area { overflow: visible; }
+html[data-fit="content"] thead { position: static; }

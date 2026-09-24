@@ -60,17 +60,30 @@ Dismiss with the × button, a click outside the modal, or Escape.
 - Drag and drop a `.json` file onto the textarea.
 - Use the "Upload File" button to pick a file.
 
+## Embedding
+
+`embed.html` is the viewer with no header, no input screen and no analytics, made to sit in an iframe on another site. The host page hands it the data with one `postMessage` call, so the data never appears in a URL, is never stored, and never leaves the host page: the embed's Content Security Policy lets it request nothing but its own files, which anyone can verify from the page source. [embed-builder.html](embed-builder.html) configures one, shows it live, and writes the snippet.
+
+The handshake:
+
+1. The embed posts `{ source: 'jsonstudio', type: 'ready' }` to its parent.
+2. The host posts `{ type: 'jsonstudio:load', data }` back, with `https://jsonstudio.neorgon.com` as the target origin. `data` is an object, an array or a JSON string. Posting again replaces the data in place.
+3. The embed answers `loaded`: mode, row count, group names, columns with their types, and whether the data can pivot.
+
+Presentation comes from the URL: `view=table|pivot|tree`, `title`, `toolbar=off`, `stats=off`, `hide=col,col`, `sort=col:desc`, `pivot=user,metric`, `chart=timeline`, `fit=content` (grow with the data and post `height`), `bg=hex`. Commands after load: `jsonstudio:view`, `jsonstudio:search`, `jsonstudio:sort`, `jsonstudio:columns`, `jsonstudio:pivot`, `jsonstudio:state`; each is answered with a `state` message. A row click posts `row`. The whole contract is written out at the bottom of the builder page and at the top of `js/embed.js`.
+
+Anyone may embed it. GitHub Pages cannot restrict framing, and for a public tool that is the point.
+
 ## Security & Data Privacy
 
-**Everything happens locally in your browser. Zero data submission.**
+**Your JSON is processed in your browser and never uploaded.** There is no server behind this page.
 
-- ✅ No network requests: your JSON never leaves your machine
-- ✅ No analytics or tracking: no Google Analytics, no third-party scripts
-- ✅ No cookies: no tracking identifiers
-- ✅ Content Security Policy enforced: blocks external scripts
-- ✅ Local storage only: uses `sessionStorage` (cleared when tab closes) to persist data across page refreshes within the same session
+- The data never leaves the page: no request carries it, and the Content Security Policy allows connections only to this origin and the two analytics hosts below.
+- Analytics: on `*.neorgon.com` the shared header kit loads GoatCounter and Cloudflare Web Analytics for pageview counts. They see the URL, not the data; they are skipped for visitors sending Do Not Track or Global Privacy Control; they never load on a local copy. `embed.html` loads neither: its policy names no host at all.
+- Storage: the page keeps a copy of the loaded JSON in `sessionStorage` (cleared when the tab closes) so a refresh keeps your data, and the search, sort and hidden columns in the URL hash so a view can be shared. The embed does neither.
+- No cookies of its own. The `neo_theme` cookie exists only if you pick a theme.
 
-**Safe for sensitive/confidential data.** GDPR/CCPA compliant (no data collection). Can be used offline once the page is loaded.
+Safe for confidential data. Usable offline once the page is loaded.
 
 ## Column type inference
 
@@ -91,7 +104,6 @@ The indicator is triggered when a column name (case-insensitive) contains the wo
 - **Grouped mode assumes one level of nesting.** Deeper nesting (groups of groups) is not supported.
 - **All groups must share the same array key.** The key is detected from the first group and applied to all others. Groups with a different structure may produce empty rows.
 - **Column union across all groups.** If groups have different fields, all field names appear as columns; cells with no value for a column show as empty.
-- **No sorting by column.** Clicking a column header does not sort the table.
 - **Search matches raw string values only.** Numeric values are matched as strings (e.g. searching `"78"` matches a cell with value `78`), but the search does not support numeric range queries.
 - **Row identity in the modal is based on string column values.** Two rows are considered the same record if every string-type column has an identical value. If all columns are numeric there is no string key to match on, so the modal will surface every row from every group.
 - **No pagination.** Very large datasets (thousands of rows) may make the browser sluggish.

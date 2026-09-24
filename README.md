@@ -40,6 +40,7 @@ A drag-and-drop JSON editor for building any JSON structure visually. No install
 - **Edit mode**: paste raw JSON directly; parse errors shown inline
 - **Import / Download**: load any `.json` file or save the result
 - **Open in Visualizer**: send current JSON to the [JSON Visualizer](visualizer/) to explore, filter, and pivot
+- **Embed anywhere**: put the Visualizer's table in your own page with an iframe. The data goes in by `postMessage`, never in a URL, and the embed page requests nothing but its own files. Configure it at [visualizer/embed-builder.html](visualizer/embed-builder.html)
 - **Templates**: start from empty object/array, array of objects, or grouped (pivot-friendly) shape
 - **Keyboard**: Delete node, Expand/Collapse all (Ctrl+Shift+E / C), Copy node as JSON (Ctrl+Shift+J)
 
@@ -50,23 +51,22 @@ For JSON shapes that work best with the Visualizer (flat list, grouped, pivot), 
 Open `index.html` directly in a browser. No dependencies, no server required.
 
 ```bash
-python3 -m http.server 8777
-# open http://localhost:8777
+make serve          # http://localhost:8802
+make test           # Node: the embed URL contract and page parity
+make test-browser   # serves the site; open /tests/browser.html for the embed contract
 ```
 
 ## Architecture
 
 ![Architecture](docs/architecture.svg)
 
-Single file: `index.html` (~1100 lines, inline CSS + JS). No build step, no dependencies.
+Three tools, no build step, no dependencies:
 
-State lives in memory only (no `localStorage`). Core structures:
+- **Builder** (`index.html`, `js/`, `css/style.css`): ES modules. `state.js` holds `root`, `nodeMap`, `idCounter`, `drag` and `editMode`; `render.js` rebuilds `#tree-root` from scratch on every change and refreshes the JSON panel; `events.js` wires the palette, drag-and-drop, templates, import and export; `utils.js` converts between the node tree and JSON.
+- **Visualizer** (`visualizer/`): ES modules, one per concern: `load.js`, `table.js`, `filter.js`, `pivot.js`, `tree.js`, `modal.js`, `stats.js`, `export.js`. `embed.html` is the same viewer with no header and no input screen, driven by `postMessage`; see [visualizer/README.md](visualizer/README.md#embedding).
+- **Scrambler** (`scrambler/index.html`): single file.
 
-- `root`: root node `{ id, type, key, children, collapsed }`
-- `nodeMap`: flat `{ id → node }` for O(1) lookup
-- `_drag`: ephemeral drag state `{ source: 'palette'|'canvas', type?, nodeId? }`
-
-Rendering: every state mutation calls `render()` → rebuilds `#tree-root` DOM from scratch → calls `updateOutput()` to refresh the JSON panel.
+State lives in memory. The Visualizer keeps a session copy in `sessionStorage` so a refresh keeps the data; the embed never does.
 
 ## Live
 

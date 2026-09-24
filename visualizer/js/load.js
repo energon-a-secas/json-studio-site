@@ -33,6 +33,9 @@ export function applyViewState(vs) {
 // ─────────────────────────────────────────────────────────────
 // Load & View Transition
 // ─────────────────────────────────────────────────────────────
+// Returns true when the data rendered, false when it was refused; the error
+// text is in #error-msg either way. Text goes through loadJSON, an already
+// parsed value (the embed receives one by postMessage) through loadValue.
 export function loadJSON(text) {
   const errEl = $('error-msg');
   errEl.classList.remove('visible');
@@ -43,15 +46,28 @@ export function loadJSON(text) {
   } catch (e) {
     errEl.textContent = 'Invalid JSON: ' + e.message;
     errEl.classList.add('visible');
-    return;
+    return false;
   }
+
+  const ok = loadValue(parsed);
+  // The session copy lets a refresh keep the data. An embed never keeps one:
+  // the host owns the data and the visitor never chose to store it here.
+  if (ok && !state.embedded) {
+    try { sessionStorage.setItem('viewer-session-json', text); } catch (e) {}
+  }
+  return ok;
+}
+
+export function loadValue(parsed) {
+  const errEl = $('error-msg');
+  errEl.classList.remove('visible');
 
   try {
     state.structure = detectStructure(parsed);
   } catch (e) {
     errEl.textContent = e.message;
     errEl.classList.add('visible');
-    return;
+    return false;
   }
 
   resetViewerState();
@@ -75,19 +91,21 @@ export function loadJSON(text) {
   $('search-input').value = '';
   applyFilter('');
 
-  // Switch views
-  $('view-input').style.display = 'none';
+  // Switch views (the input view and its two return buttons exist only on
+  // the full page; embed.html has neither)
+  const inputView = $('view-input');
+  if (inputView) inputView.style.display = 'none';
   $('view-viewer').classList.add('active');
-  $('btn-new-json').classList.remove('hidden-el');
+  $('btn-new-json')?.classList.remove('hidden-el');
   $('btn-export-csv').classList.remove('hidden-el');
   $('btn-sparklines').classList.remove('hidden-el');
   $('btn-heat').classList.remove('hidden-el');
   $('btn-columns').classList.remove('hidden-el');
   $('btn-filters').classList.remove('hidden-el');
   $('btn-tree').classList.remove('hidden-el');
-  $('btn-reset').classList.remove('hidden-el');
+  $('btn-reset')?.classList.remove('hidden-el');
 
-  // Apply pending URL state then save JSON to session
+  // Apply pending URL state
   if (state.pendingState) { applyViewState(state.pendingState); state.pendingState = null; }
-  try { sessionStorage.setItem('viewer-session-json', text); } catch (e) {}
+  return true;
 }

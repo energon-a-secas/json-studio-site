@@ -25,8 +25,17 @@ export { loadJSON };
 
 // ─────────────────────────────────────────────────────────────
 // Wire up all event listeners
+// Two halves: the input view (paste, upload, demos, the two buttons
+// that return to it) and the viewer (everything from the search bar
+// down). index.html wires both; embed.html has no input view and
+// wires only the viewer.
 // ─────────────────────────────────────────────────────────────
 export function initEvents() {
+  initInputEvents();
+  initViewerEvents();
+}
+
+export function initInputEvents() {
   // Build example buttons
   const container = $('example-buttons');
   DEMOS.forEach((demo) => {
@@ -98,6 +107,29 @@ export function initEvents() {
     }
   });
 
+  // Reset button - clear everything and go back to input
+  $('btn-reset').addEventListener('click', () => {
+    resetViewerState();
+    $('view-viewer').classList.remove('active');
+    $('view-input').style.display = '';
+    $('btn-new-json').classList.add('hidden-el');
+    $('btn-export-csv').classList.add('hidden-el');
+    $('btn-sparklines').classList.add('hidden-el');
+    $('btn-heat').classList.add('hidden-el');
+    $('btn-columns').classList.add('hidden-el');
+    $('btn-filters').classList.add('hidden-el');
+    $('btn-reset').classList.add('hidden-el');
+    $('btn-pivot').classList.remove('active');
+    $('btn-tree').classList.remove('active');
+    $('filter-bar').classList.add('hidden-el');
+    $('json-input').value = '';
+    $('error-msg').classList.remove('visible');
+    try { sessionStorage.removeItem('viewer-session-json'); } catch (e) {}
+  });
+
+}
+
+export function initViewerEvents() {
   // Search (debounced 150ms)
   let _searchTimer = null;
   $('search-input').addEventListener('input', (e) => {
@@ -220,27 +252,6 @@ export function initEvents() {
       if (state.heatMapEnabled) applyHeatMap();
       if (state.treeActive) activateTreeMode();
     }
-  });
-
-  // Reset button - clear everything and go back to input
-  $('btn-reset').addEventListener('click', () => {
-    resetViewerState();
-    $('view-viewer').classList.remove('active');
-    $('view-input').style.display = '';
-    $('btn-new-json').classList.add('hidden-el');
-    $('btn-collapse-all').classList.add('hidden-el');
-    $('btn-export-csv').classList.add('hidden-el');
-    $('btn-sparklines').classList.add('hidden-el');
-    $('btn-heat').classList.add('hidden-el');
-    $('btn-columns').classList.add('hidden-el');
-    $('btn-filters').classList.add('hidden-el');
-    $('btn-reset').classList.add('hidden-el');
-    $('btn-pivot').classList.remove('active');
-    $('btn-tree').classList.remove('active');
-    $('filter-bar').classList.add('hidden-el');
-    $('json-input').value = '';
-    $('error-msg').classList.remove('visible');
-    try { sessionStorage.removeItem('viewer-session-json'); } catch (e) {}
   });
 
   // Pivot toggle

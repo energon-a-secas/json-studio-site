@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- The promise a host can read off this page: it may request nothing but
+       its own files. No script host, no style host, no connect host. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-title" content="JSON Studio">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="neo-mark" content="on">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <title>JSON Visualizer embed</title>
+  <!-- An embed is a widget inside someone else's page: it must not be indexed
+       as a page of its own, and it carries no site header or footer. -->
+  <meta name="robots" content="noindex, follow">
+  <meta name="theme-color" content="#040714">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/embed.css">
+</head>
+<body class="embed-body">
+<div class="embed-shell">
+  <div id="embed-caption" class="embed-caption"></div>
+  <div id="error-msg" class="error-msg"></div>
+  <div id="embed-empty" class="embed-empty">
+    <p class="embed-empty-framed">Waiting for data from the page that embeds this.</p>
+    <p class="embed-empty-direct">This is the embeddable JSON Visualizer. It shows nothing on its own: a host page hands it data with <code>postMessage</code>. <a href="embed-builder.html">Build an embed</a> or <a href="./">open the Visualizer</a>.</p>
+  </div>
+
+<!-- ── Viewer View ── -->
+<div id="view-viewer">
+  <div class="search-bar" id="search-bar">
+    <!-- Search & Filter Group (table mode) -->
+    <div class="toolbar-group toolbar-group-search" id="toolbar-search-table">
+      <div class="search-wrap">
+        <span class="search-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
+        <input type="text" id="search-input" placeholder="Search records…">
+        <button class="btn-regex" id="btn-regex" title="Toggle regex search mode">.*</button>
+      </div>
+      <span class="match-count" id="match-count"></span>
+      <span class="filter-badge hidden-el" id="filter-badge"></span>
+      <div class="filter-dropdown-wrap">
+        <button class="btn btn-ghost btn-sm hidden-el" id="btn-filters" title="Filter by column values">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filters
+        </button>
+        <div class="filter-dropdown hidden-el" id="filter-dropdown"></div>
+      </div>
+    </div>
+
+    <!-- Tree Search Group (tree mode) -->
+    <div class="toolbar-group toolbar-group-search hidden-el" id="toolbar-search-tree">
+      <button class="btn btn-ghost btn-sm" id="btn-exit-tree" title="Return to table view">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Table
+      </button>
+      <span style="width:1px;height:20px;background:var(--border);flex-shrink:0;margin:0 8px;"></span>
+      <div class="search-wrap" style="flex:1;max-width:400px;">
+        <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
+        <input type="text" id="tree-search-input" class="tree-search-input" placeholder="Search tree…">
+      </div>
+    </div>
+
+    <span class="toolbar-separator" id="sep-1"></span>
+
+    <!-- View Modes Group -->
+    <div class="toolbar-group toolbar-group-views">
+      <button class="btn btn-pivot-toggle hidden-el" id="btn-pivot" title="Switch to pivot table view, aggregate by user & metric">Pivot</button>
+      <button class="btn btn-tree-toggle hidden-el" id="btn-tree" title="Switch to org tree view, visualize hierarchical relationships">Tree</button>
+    </div>
+
+    <span class="toolbar-separator" id="sep-2"></span>
+
+    <!-- Visualizations Group -->
+    <div class="toolbar-group toolbar-group-viz" id="toolbar-viz">
+      <button class="btn btn-ghost btn-sm hidden-el" id="btn-sparklines" title="Show inline bar charts for numeric columns">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="14" width="4" height="6" rx="1"/><rect x="9" y="9" width="4" height="11" rx="1"/><rect x="16" y="4" width="4" height="16" rx="1"/></svg>
+        Bars
+      </button>
+      <button class="btn btn-ghost btn-sm hidden-el" id="btn-heat" title="Apply color gradient heatmap to numeric columns">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2C8 2 6 6 6 10c0 3.5 2 6 4 8l1 1 1-1c2-2 5-4.5 5-8 0-4-2-8-5-8z"/></svg>
+        Heat
+      </button>
+    </div>
+
+    <span class="toolbar-separator" id="sep-3"></span>
+
+    <!-- Table Actions Group -->
+    <div class="toolbar-group toolbar-group-table" id="toolbar-table">
+      <div class="cols-dropdown-wrap">
+        <button class="btn btn-ghost btn-sm hidden-el" id="btn-columns" title="Show or hide columns">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
+          Columns
+        </button>
+        <div class="cols-dropdown hidden-el" id="cols-dropdown"></div>
+      </div>
+    </div>
+
+    <!-- Tree Actions Group (tree mode) -->
+    <div class="toolbar-group toolbar-group-table hidden-el" id="toolbar-tree-actions">
+      <button class="btn btn-ghost btn-sm" id="btn-tree-collapse-all" title="Collapse all tree nodes">Collapse All</button>
+      <button class="btn btn-ghost btn-sm" id="btn-tree-expand-all" title="Expand all tree nodes">Expand All</button>
+    </div>
+
+    <span class="toolbar-separator" id="sep-4"></span>
+
+    <!-- Export & Actions Group -->
+    <div class="toolbar-group toolbar-group-actions">
+      <button class="btn btn-ghost btn-sm hidden-el" id="btn-export-csv" title="Export current view as CSV file">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </button>
+    </div>
+  </div>
+  <div class="pivot-toolbar hidden-el" id="pivot-toolbar">
+    <button class="btn btn-ghost btn-sm" id="btn-exit-pivot">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Table
+    </button>
+    <span style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></span>
+    <span class="pivot-toolbar-label">User</span>
+    <select class="pivot-select" id="pivot-user-select"></select>
+    <span class="pivot-toolbar-label">Metric</span>
+    <select class="pivot-select" id="pivot-metric-select"></select>
+    <span style="width:1px;height:20px;background:var(--border);flex-shrink:0;margin-left:4px;"></span>
+    <button class="btn-chart-toggle" id="btn-chart-toggle">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Timeline
+    </button>
+    <button class="btn-ghost btn btn-sm hidden-el" id="btn-period-order">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+      <span id="btn-period-order-label">1m → 12m</span>
+    </button>
+  </div>
+  <div class="filter-bar hidden-el" id="filter-bar"></div>
+  <div class="viewer-body">
+    <div class="table-area" id="table-area">
+      <table id="data-table">
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+      <table class="pivot-table hidden-el" id="pivot-table">
+        <thead id="pivot-table-head"></thead>
+        <tbody id="pivot-table-body"></tbody>
+      </table>
+      <div class="timeline-area hidden-el" id="timeline-area"></div>
+      <div class="tree-area hidden-el" id="tree-area"></div>
+    </div>
+    <aside class="stats-sidebar" id="stats-sidebar"></aside>
+  </div>
+</div>
+
+  <div class="embed-foot">
+    <span id="embed-foot-count"></span>
+    <a class="embed-mark" href="https://jsonstudio.neorgon.com/visualizer/" target="_blank" rel="noopener">JSON Studio</a>
+  </div>
+</div>
+
+<!-- ── Record Modal ── -->
+<div id="record-modal" class="modal-backdrop hidden-el" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" id="modal-close" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer hidden-el" id="modal-footer"></div>
+  </div>
+</div>
+
+<script type="module" src="js/embed.js"></script>
+</body>
+</html>

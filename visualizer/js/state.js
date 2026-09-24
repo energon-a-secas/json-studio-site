@@ -22,12 +22,16 @@ export const state = {
   sparklinesEnabled: false,  // true = show inline mini bar in numeric cells
   regexSearch:       false,  // true = use regex in search box
   pendingState:      null,   // view state to apply after next loadJSON
+  embedded:          false,  // true inside embed.html: no storage writes, no URL writes
 };
 
 // ─────────────────────────────────────────────────────────────
 // URL / Session state
 // ─────────────────────────────────────────────────────────────
 export function pushViewState() {
+  // An embed's URL belongs to the host page's iframe; a search term written
+  // into it would sit in the visitor's history for a page they never opened.
+  if (state.embedded) return;
   const vs = {
     q: $('search-input').value || undefined,
     s: state.sortCol || undefined,
